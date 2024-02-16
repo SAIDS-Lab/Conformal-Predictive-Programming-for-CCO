@@ -76,3 +76,31 @@ def run_experiment_step_1(N, K, V, method, delta, noise_generator, hs, gs, x_dim
     statistics["method"] = method
     statistics["omega"] = omega
     return statistics
+
+
+def run_experiment_step_2(statistics, L, method, noise_generator, f_value):
+    step_2_statistics = dict()
+    Cs = []
+    posterior_coverages = []
+    for i in range(len(statistics["optimal_solutions"])):
+        # Compute the calibration data.
+        x_opt = statistics["optimal_solutions"][i]
+        calibration_Ys = [noise_generator() for l in range(L)]
+        calibration_fs = [f_value(x_opt, Y) for Y in calibration_Ys]
+        calibration_fs.sort()
+        p = int(np.ceil((L + 1) * (1 - statistics["delta"])))
+        c = calibration_fs[p - 1]
+        Cs.append(c)
+        # Check posterior feasibility.
+        feasible_count = 0
+        for Y in statistics["final_test_Ys"][i]:
+            if f_value(x_opt, Y) <= Cs[i]:
+                feasible_count += 1
+        posterior_coverages.append(feasible_count / statistics["V"])
+
+    # Summarize the statistics.
+    step_2_statistics["L"] = L
+    step_2_statistics["K"] = statistics["K"]
+    step_2_statistics["Cs"] = Cs
+    step_2_statistics["posterior_coverages"] = posterior_coverages
+    return step_2_statistics
