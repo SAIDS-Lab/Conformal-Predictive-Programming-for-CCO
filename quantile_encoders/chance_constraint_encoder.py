@@ -106,6 +106,9 @@ class ChanceConstraintEncoder:
         Encode the chance constraint via CPP with MIP reformulation.
         """
         num_largerthan0_ceil = int(np.ceil((self.K + 1) * (1 - self.delta)))
+        # Check for the correct training data size.
+        if (self.K < np.ceil((self.K + 1) * (1 - self.delta))):
+            raise Exception("Training dataset not large enough.")
         # Initialize variables.
         zs = {}
         for i in range(self.K):
