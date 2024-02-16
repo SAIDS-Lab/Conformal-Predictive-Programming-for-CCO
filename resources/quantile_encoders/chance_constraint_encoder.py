@@ -16,7 +16,7 @@ class ChanceConstraintEncoder:
     """
     def __init__(self, model, x, f, training_ys, delta, method, omega = None):
         """
-        Initialize the encoder and perform encoding automatically.
+        Initialize the encoder.
 
         :param model: the model in which the encoded chance constraint to be added.
         :param x: the decision variable.
@@ -38,6 +38,13 @@ class ChanceConstraintEncoder:
                 raise Exception("The omega parameter is not set for SAA.")
             if self.omega <= 0 or self.omega >= 1:
                 raise Exception("The omega parameter should be in the range (0, 1).")
+
+    def encode(self):
+        """
+        Performs encoding on the chance constraint.
+
+        :return: the encoded model.
+        """
         # Add the encoded constraint.
         if self.method == "SA":
             self.__encode_with_sa()
@@ -47,6 +54,7 @@ class ChanceConstraintEncoder:
             self.__encode_with_cpp_kkt()
         else:
             self.__encode_with_cpp_mip()
+        return self.model
 
     def __encode_with_sa(self):
         """

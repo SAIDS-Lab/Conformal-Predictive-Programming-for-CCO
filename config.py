@@ -9,3 +9,6 @@ config_seed = 1234
 M = 1000
 m = -M
 zeta = 0.00001
+
+# Hyperparameters for the solvers.
+time_limit = 100
