@@ -141,8 +141,11 @@ class ChanceConstraintEncoder:
         else:
             num_largerthan0_ceil = int(np.ceil((self.K + 1) * (1 - self.delta)))
         # Check for the correct training data size.
-        if (self.K < np.ceil((self.K + 1) * (1 - self.delta))):
-            raise Exception("Training dataset not large enough.")
+        if self.robust:
+            check_data_num(self.K, self.delta, self.epsilon)
+        else:
+            if (self.K < np.ceil((self.K + 1) * (1 - self.delta))):
+                raise Exception("Training dataset not large enough.")
         # Initialize variables.
         zs = {}
         for i in range(self.K):
