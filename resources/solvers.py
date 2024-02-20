@@ -13,7 +13,7 @@ from pyscipopt import Model
 np.random.seed(config.config_seed)
 
 
-def cco_solve(x_dim, delta, training_Ys, hs, gs, f, J, method, omega = None):
+def cco_solve(x_dim, delta, training_Ys, hs, gs, f, J, method, omega = None, robust = False, epsilon = None):
     """
     Solve the CCO problem.
 
@@ -26,6 +26,8 @@ def cco_solve(x_dim, delta, training_Ys, hs, gs, f, J, method, omega = None):
     :param J: the cost function, should be a function of x only.
     :param method: the method used for solving the cco. The acceptable method includes "SA", "SAA", "CPP-KKT", and "CPP-MIP".
     :param omega: the omega parameter for SAA.
+    :param robust: whether the chance constraint encoding is robust.
+    :param epsilon: distribution shift to be handled by the robust encoding (in KL divergence).
     :return: the solution and the time used for solving the problem.
     """
     # Initialize the model.
@@ -53,7 +55,7 @@ def cco_solve(x_dim, delta, training_Ys, hs, gs, f, J, method, omega = None):
     for g in gs:
         model.addCons(g(x) == 0)
     # Encode chance constraint.
-    model = ChanceConstraintEncoder(model, x, f, training_Ys, delta, method, omega = omega).encode()
+    model = ChanceConstraintEncoder(model, x, f, training_Ys, delta, method, omega = omega, robust = robust, epsilon = epsilon).encode()
     # Add cost function.
     objective = model.addVar(lb=None, ub=None, vtype="C", name="obj")
     model.addCons(J(x) <= objective)
