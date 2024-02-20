@@ -6,15 +6,17 @@ In this file, we write different quantile encoders for the chance constraint.
 import numpy as np
 from pyscipopt import quicksum
 import config
+from resources.robust_conformal_prediction import *
 
 # Hyperparameter setting:
 np.random.seed(config.config_seed)
+
 
 class ChanceConstraintEncoder:
     """
     Encoding the chance constraint.
     """
-    def __init__(self, model, x, f, training_ys, delta, method, omega = None):
+    def __init__(self, model, x, f, training_ys, delta, method, omega = None, robust = False, epsilon = None):
         """
         Initialize the encoder.
 
@@ -25,9 +27,12 @@ class ChanceConstraintEncoder:
         :param delta: the expected miscoverage rate.
         :param method: the encoding method. Choices include "SA", "SAA", "CPP-KKT", and "CPP-MIP".
         :param omega: the omega parameter for SAA.
+        :param robust: whether the chance constraint encoding is robust.
+        :param epsilon: distribution shift to be handled by the robust encoding (in KL divergence).
         """
         # Initialize fields.
         self.model, self.x, self.f, self.training_ys, self.delta, self.method, self.omega = model, x, f, training_ys, delta, method, omega
+        self.robust, self.epsilon = robust, epsilon
         self.K = len(self.training_ys)
         # Check if the method selected is correct.
         if method not in ["SA", "SAA", "CPP-KKT", "CPP-MIP"]:
@@ -38,6 +43,14 @@ class ChanceConstraintEncoder:
                 raise Exception("The omega parameter is not set for SAA.")
             if self.omega <= 0 or self.omega >= 1:
                 raise Exception("The omega parameter should be in the range (0, 1).")
+        # Check for robust.
+        if self.robust:
+            if method == "SAA" or method == "SA":
+                raise Exception("Robust encoding is not supported for SAA and SA.")
+            if self.epsilon is None:
+                raise Exception("The epsilon parameter is not set for robust chance constraint encoding.")
+            if self.epsilon <= 0:
+                raise Exception("The epsilon parameter should be positive.")
 
     def encode(self):
         """
@@ -81,10 +94,18 @@ class ChanceConstraintEncoder:
         """
         Encode the chance constraint via CPP with KKT reformulation.
         """
-        alpha = (1 + 1 / self.K) * (1 - self.delta)
+        # Calculate alpha.
+        if self.robust:
+            delta_tilde = calculate_delta_tilde(self.delta, self.K, phi, self.epsilon)
+            alpha = 1 - delta_tilde
+        else:
+            alpha = (1 + 1 / self.K) * (1 - self.delta)
         # Check for the correct training data size.
-        if (self.K < np.ceil((self.K + 1) * (1 - self.delta))):
-            raise Exception("Training dataset not large enough.")
+        if self.robust:
+            check_data_num(self.K, self.delta, self.epsilon)
+        else:
+            if (self.K < np.ceil((self.K + 1) * (1 - self.delta))):
+                raise Exception("Training dataset not large enough.")
         # Initialize variables.
         q = self.model.addVar(lb = None, ub = None, vtype = "C", name = "q")
         gammas, lambdas, betas, e_minuses, e_pluses = {}, {}, {}, {}, {}
@@ -113,7 +134,12 @@ class ChanceConstraintEncoder:
         """
         Encode the chance constraint via CPP with MIP reformulation.
         """
-        num_largerthan0_ceil = int(np.ceil((self.K + 1) * (1 - self.delta)))
+        # Calculate num_largerthan0_ceil.
+        if self.robust:
+            delta_tilde = calculate_delta_tilde(self.delta, self.K, phi, self.epsilon)
+            num_largerthan0_ceil = int(np.ceil(self.K * (1 - delta_tilde)))
+        else:
+            num_largerthan0_ceil = int(np.ceil((self.K + 1) * (1 - self.delta)))
         # Check for the correct training data size.
         if (self.K < np.ceil((self.K + 1) * (1 - self.delta))):
             raise Exception("Training dataset not large enough.")
