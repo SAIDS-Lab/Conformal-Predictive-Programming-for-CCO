@@ -14,7 +14,7 @@ np.random.seed(config.config_seed)
 T = 5
 z = (5, 5)
 zeta = 1
-hyperparameters = {"N": 1, "K": 70, "V": 200, "M": 1000, "delta": 0.1}
+hyperparameters = {"N": 100, "K": 70, "V": 200, "M": 1000, "delta": 0.1}
 
 
 def generate_random_noise_matrix():
@@ -22,7 +22,7 @@ def generate_random_noise_matrix():
     Generate a random noise matrix.
     :return: a random noise matrix.
     """
-    return np.random.laplace(0, 0.02, (T, 4))
+    return np.random.laplace(0, 0.02, (T, 4)).tolist()
 
 
 def f(u, W):
@@ -74,8 +74,8 @@ print()
 
 # Run the second step of the experiment.
 results_step_2 = dict()
-results_step_2["CPP-KKT"] = run_experiment_step_2(results_step_1["CPP-KKT"], hyperparameters["L"], "CPP-KKT", generate_random_noise_matrix, f_value)
-results_step_2["CPP-MIP"] = run_experiment_step_2(results_step_1["CPP-MIP"], hyperparameters["L"], "CPP-MIP", generate_random_noise_matrix, f_value)
+results_step_2["CPP-KKT"] = run_experiment_step_2(results_step_1["CPP-KKT"], hyperparameters["V"], "CPP-KKT", generate_random_noise_matrix, f_value)
+results_step_2["CPP-MIP"] = run_experiment_step_2(results_step_1["CPP-MIP"], hyperparameters["V"], "CPP-MIP", generate_random_noise_matrix, f_value)
 # Save the results for the second step of the experiment.
 with open("../case_study_results/results_case_study_2/results_step_2.json", "w") as f:
     json.dump(results_step_2, f)
