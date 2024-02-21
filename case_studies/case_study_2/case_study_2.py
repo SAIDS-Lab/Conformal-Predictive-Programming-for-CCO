@@ -14,7 +14,7 @@ np.random.seed(config.config_seed)
 T = 5
 z = (5, 5)
 zeta = 1
-hyperparameters = {"N": 100, "K": 70, "V": 200, "M": 1000, "delta": 0.1}
+hyperparameters = {"N": 100, "K": 70, "L": 200, "V": 1000, "delta": 0.1}
 
 
 def generate_random_noise_matrix():
@@ -62,14 +62,14 @@ def f_value(u, W):
 # Run the experiment.
 results_step_1 = dict()
 print("Evaluating with CPP-KKT:")
-results_step_1["CPP-KKT"] = run_experiment_step_1(hyperparameters["N"], hyperparameters["K"], hyperparameters["V"], "CPP-KKT", hyperparameters["delta"], generate_random_noise_matrix, hs, gs, (T, 2), f, J, f_value, J_value)
+results_step_1["CPP-KKT"] = run_experiment_step_1(hyperparameters["N"], hyperparameters["K"], hyperparameters["V"], "CPP-KKT", hyperparameters["delta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, (T, 2), f, J, f_value, J_value)
 print()
 
 print("Evaluating with CPP-MIP:")
-results_step_1["CPP-MIP"] = run_experiment_step_1(hyperparameters["N"], hyperparameters["K"], hyperparameters["V"], "CPP-MIP", hyperparameters["delta"], generate_random_noise_matrix, hs, gs, (T, 2), f, J, f_value, J_value)
+results_step_1["CPP-MIP"] = run_experiment_step_1(hyperparameters["N"], hyperparameters["K"], hyperparameters["V"], "CPP-MIP", hyperparameters["delta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, (T, 2), f, J, f_value, J_value)
 # Save the results for the first step of the experiment.
-with open("../case_study_results/results_case_study_2/results_step_1.json", "w") as f:
-    json.dump(results_step_1, f)
+with open("../case_study_results/results_case_study_2/results_step_1.json", "w") as file:
+    json.dump(results_step_1, file)
 print()
 
 # Run the second step of the experiment.
@@ -77,5 +77,5 @@ results_step_2 = dict()
 results_step_2["CPP-KKT"] = run_experiment_step_2(results_step_1["CPP-KKT"], hyperparameters["L"], generate_random_noise_matrix, f_value)
 results_step_2["CPP-MIP"] = run_experiment_step_2(results_step_1["CPP-MIP"], hyperparameters["L"], generate_random_noise_matrix, f_value)
 # Save the results for the second step of the experiment.
-with open("../case_study_results/results_case_study_2/results_step_2.json", "w") as f:
+with open("../case_study_results/results_case_study_2/results_step_2.json", "w") as file:
     json.dump(results_step_2, f)

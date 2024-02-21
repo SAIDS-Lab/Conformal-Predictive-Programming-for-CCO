@@ -12,7 +12,7 @@ from resources.robust_conformal_prediction import calculate_delta_tilde, phi
 np.random.seed(config.config_seed)
 
 
-def run_experiment_step_1(N, K, V, method, delta, noise_generator, hs, gs, x_dim, f, J, f_value, J_value, omega = None, robust = False, epsilon = None):
+def run_experiment_step_1(N, K, V, method, delta, training_noise_generator, test_noise_generator, hs, gs, x_dim, f, J, f_value, J_value, omega = None, robust = False, epsilon = None):
     # Check for the usage of omega.
     if method == "SAA" and omega is None:
         raise Exception("The omega parameter is not set for SAA.")
@@ -32,7 +32,7 @@ def run_experiment_step_1(N, K, V, method, delta, noise_generator, hs, gs, x_dim
     for n in range(N):
         print("Performing: CPP Step 1 with n = " + str(n + 1))
         # Generate the training data.
-        training_Ys = [noise_generator() for i in range(K)]
+        training_Ys = [training_noise_generator() for i in range(K)]
         # Run the optimization.
         x_opt, solver_time = cco_solve(x_dim, delta, training_Ys, hs, gs, f, J, method, omega = omega, robust = robust, epsilon = epsilon)
         # Handle the error and infeasibility.
@@ -53,7 +53,7 @@ def run_experiment_step_1(N, K, V, method, delta, noise_generator, hs, gs, x_dim
         # Record the optimal value.
         optimal_values.append(J_value(x_opt))
         # Check feasibility.
-        test_Ys = [noise_generator() for i in range(V)]
+        test_Ys = [test_noise_generator() for i in range(V)]
         final_test_ys.append(test_Ys)
         feasible_count = 0
         for Y in test_Ys:
@@ -79,14 +79,14 @@ def run_experiment_step_1(N, K, V, method, delta, noise_generator, hs, gs, x_dim
     return statistics
 
 
-def run_experiment_step_2(statistics, L,  noise_generator, f_value, robust = False, epsilon = None):
+def run_experiment_step_2(statistics, L, training_noise_generator, f_value, robust = False, epsilon = None):
     step_2_statistics = dict()
     Cs = []
     posterior_coverages = []
     for i in range(len(statistics["optimal_solutions"])):
         # Compute the calibration data.
         x_opt = statistics["optimal_solutions"][i]
-        calibration_Ys = [noise_generator() for l in range(L)]
+        calibration_Ys = [training_noise_generator() for l in range(L)]
         calibration_fs = [f_value(x_opt, Y) for Y in calibration_Ys]
         calibration_fs.sort()
         if robust:

@@ -43,22 +43,22 @@ for i in range(num_groups):
     print("Evaluating with parameters:", parameters)
     results_step_1[i] = dict()
     print("Evaluating with CPP-KKT:")
-    results_step_1[i]["CPP-KKT"] = run_experiment_step_1(parameters["N"], parameters["K"], parameters["V"], "CPP-KKT", parameters["delta"], generate_random_noise, hs, gs, 1, f, J, f_value, J_value)
+    results_step_1[i]["CPP-KKT"] = run_experiment_step_1(parameters["N"], parameters["K"], parameters["V"], "CPP-KKT", parameters["delta"], generate_random_noise, generate_random_noise, hs, gs, 1, f, J, f_value, J_value)
     print("Evaluating with CPP-MIP:")
-    results_step_1[i]["CPP-MIP"] = run_experiment_step_1(parameters["N"], parameters["K"], parameters["V"], "CPP-MIP", parameters["delta"], generate_random_noise, hs, gs, 1, f, J, f_value, J_value)
+    results_step_1[i]["CPP-MIP"] = run_experiment_step_1(parameters["N"], parameters["K"], parameters["V"], "CPP-MIP", parameters["delta"], generate_random_noise, generate_random_noise, hs, gs, 1, f, J, f_value, J_value)
     print("Evaluating with SA:")
-    results_step_1[i]["SA"] = run_experiment_step_1(parameters["N"], parameters["K"], parameters["V"], "SA", parameters["delta"], generate_random_noise, hs, gs, 1, f, J, f_value, J_value)
+    results_step_1[i]["SA"] = run_experiment_step_1(parameters["N"], parameters["K"], parameters["V"], "SA", parameters["delta"], generate_random_noise, generate_random_noise, hs, gs, 1, f, J, f_value, J_value)
     print("Evaluating with SAA with omega 1:" + str(parameters["saa_omega_1"]))
-    results_step_1[i]["SAA_1"] = run_experiment_step_1(parameters["N"], parameters["K"], parameters["V"], "SAA", parameters["delta"], generate_random_noise, hs, gs, 1, f, J, f_value, J_value, parameters["saa_omega_1"])
+    results_step_1[i]["SAA_1"] = run_experiment_step_1(parameters["N"], parameters["K"], parameters["V"], "SAA", parameters["delta"], generate_random_noise, generate_random_noise, hs, gs, 1, f, J, f_value, J_value, parameters["saa_omega_1"])
     print("Evaluating with SAA with omega 2:" + str(parameters["saa_omega_2"]))
-    results_step_1[i]["SAA_2"] = run_experiment_step_1(parameters["N"], parameters["K"], parameters["V"], "SAA", parameters["delta"], generate_random_noise, hs, gs, 1, f, J, f_value, J_value, parameters["saa_omega_2"])
+    results_step_1[i]["SAA_2"] = run_experiment_step_1(parameters["N"], parameters["K"], parameters["V"], "SAA", parameters["delta"], generate_random_noise, generate_random_noise, hs, gs, 1, f, J, f_value, J_value, parameters["saa_omega_2"])
     print()
 
 # Save the results from the first step.
 print("Saving the results from the first step.")
 for i in range(num_groups):
-    with open("../case_study_results/results_case_study_1/results_step_1_case_1_K=" + str(group_parameters[i]["K"]) + ".json", "w") as f:
-        json.dump(results_step_1[i], f)
+    with open("../case_study_results/results_case_study_1/results_step_1_case_1_K=" + str(group_parameters[i]["K"]) + ".json", "w") as file:
+        json.dump(results_step_1[i], file)
 print()
 
 # Run the second step of the experiment.
@@ -71,5 +71,5 @@ for i in range(num_groups):
         results_step_2[current_k][L] = dict()
         for method in ["CPP-KKT", "CPP-MIP", "SA", "SAA_1", "SAA_2"]:
             results_step_2[current_k][L][method] = run_experiment_step_2(results_step_1[i][method], L, generate_random_noise, f_value)
-with open("../case_study_results/results_case_study_1/results_step_2_case_1.json", "w") as f:
-    json.dump(results_step_2, f)
+with open("../case_study_results/results_case_study_1/results_step_2_case_1.json", "w") as file:
+    json.dump(results_step_2, file)
