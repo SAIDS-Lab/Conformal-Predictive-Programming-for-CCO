@@ -70,6 +70,6 @@ for i in range(num_groups):
     for L in Ls:
         results_step_2[current_k][L] = dict()
         for method in ["CPP-KKT", "CPP-MIP", "SA", "SAA_1", "SAA_2"]:
-            results_step_2[current_k][L][method] = run_experiment_step_2(results_step_1[i][method], L, method, generate_random_noise, f_value)
+            results_step_2[current_k][L][method] = run_experiment_step_2(results_step_1[i][method], L, generate_random_noise, f_value)
 with open("../case_study_results/results_case_study_1/results_step_2_case_1.json", "w") as f:
     json.dump(results_step_2, f)

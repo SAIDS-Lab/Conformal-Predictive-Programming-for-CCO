@@ -74,8 +74,8 @@ print()
 
 # Run the second step of the experiment.
 results_step_2 = dict()
-results_step_2["CPP-KKT"] = run_experiment_step_2(results_step_1["CPP-KKT"], hyperparameters["V"], "CPP-KKT", generate_random_noise_matrix, f_value)
-results_step_2["CPP-MIP"] = run_experiment_step_2(results_step_1["CPP-MIP"], hyperparameters["V"], "CPP-MIP", generate_random_noise_matrix, f_value)
+results_step_2["CPP-KKT"] = run_experiment_step_2(results_step_1["CPP-KKT"], hyperparameters["L"], generate_random_noise_matrix, f_value)
+results_step_2["CPP-MIP"] = run_experiment_step_2(results_step_1["CPP-MIP"], hyperparameters["L"], generate_random_noise_matrix, f_value)
 # Save the results for the second step of the experiment.
 with open("../case_study_results/results_case_study_2/results_step_2.json", "w") as f:
     json.dump(results_step_2, f)

@@ -6,12 +6,13 @@ In this file, we implement the general experimental procedure from the paper det
 import numpy as np
 import config
 from resources.solvers import cco_solve
+from resources.robust_conformal_prediction import calculate_delta_tilde, phi
 
 # Hyperparameter setting:
 np.random.seed(config.config_seed)
 
 
-def run_experiment_step_1(N, K, V, method, delta, noise_generator, hs, gs, x_dim, f, J, f_value, J_value, omega = None):
+def run_experiment_step_1(N, K, V, method, delta, noise_generator, hs, gs, x_dim, f, J, f_value, J_value, omega = None, robust = False, epsilon = None):
     # Check for the usage of omega.
     if method == "SAA" and omega is None:
         raise Exception("The omega parameter is not set for SAA.")
@@ -33,7 +34,7 @@ def run_experiment_step_1(N, K, V, method, delta, noise_generator, hs, gs, x_dim
         # Generate the training data.
         training_Ys = [noise_generator() for i in range(K)]
         # Run the optimization.
-        x_opt, solver_time = cco_solve(x_dim, delta, training_Ys, hs, gs, f, J, method, omega = omega)
+        x_opt, solver_time = cco_solve(x_dim, delta, training_Ys, hs, gs, f, J, method, omega = omega, robust = robust, epsilon = epsilon)
         # Handle the error and infeasibility.
         if type(x_opt) == str and x_opt == "infeasible":
             print("Warning: Infeasibility to the Quantile Reformulation detected.")
@@ -78,7 +79,7 @@ def run_experiment_step_1(N, K, V, method, delta, noise_generator, hs, gs, x_dim
     return statistics
 
 
-def run_experiment_step_2(statistics, L, method, noise_generator, f_value):
+def run_experiment_step_2(statistics, L,  noise_generator, f_value, robust = False, epsilon = None):
     step_2_statistics = dict()
     Cs = []
     posterior_coverages = []
@@ -88,7 +89,11 @@ def run_experiment_step_2(statistics, L, method, noise_generator, f_value):
         calibration_Ys = [noise_generator() for l in range(L)]
         calibration_fs = [f_value(x_opt, Y) for Y in calibration_Ys]
         calibration_fs.sort()
-        p = int(np.ceil((L + 1) * (1 - statistics["delta"])))
+        if robust:
+            delta_tilde = calculate_delta_tilde(statistics["delta"], L, phi, epsilon)
+            p = int(np.ceil(L * (1 - delta_tilde)))
+        else:
+            p = int(np.ceil((L + 1) * (1 - statistics["delta"])))
         c = calibration_fs[p - 1]
         Cs.append(c)
         # Check posterior feasibility.
