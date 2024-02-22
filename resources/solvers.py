@@ -53,7 +53,7 @@ def cco_solve(x_dim, delta, training_Ys, hs, gs, f, J, method, omega = None, rob
     for g in gs:
         model.addCons(g(x) == 0)
     # Encode chance constraint.
-    model = ChanceConstraintEncoder(model, x, f, training_Ys, delta, method, omega = omega, robust = robust, epsilon = epsilon).encode()
+    ChanceConstraintEncoder(model, x, f, training_Ys, delta, method, omega = omega, robust = robust, epsilon = epsilon).encode()
     # Add cost function.
     objective = model.addVar(lb=None, ub=None, vtype="C", name="obj")
     model.addCons(J(x) <= objective)

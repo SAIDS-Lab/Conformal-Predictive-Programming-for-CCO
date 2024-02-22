@@ -55,8 +55,6 @@ class ChanceConstraintEncoder:
     def encode(self):
         """
         Performs encoding on the chance constraint.
-
-        :return: the encoded model.
         """
         # Add the encoded constraint.
         if self.method == "SA":
@@ -67,7 +65,6 @@ class ChanceConstraintEncoder:
             self.__encode_with_cpp_kkt()
         else:
             self.__encode_with_cpp_mip()
-        return self.model
 
     def __encode_with_sa(self):
         """
@@ -196,4 +193,4 @@ class JointChanceConstraintEncoder:
 
     def __encode_for_union(self):
         for f in self.fs:
-            self.model = ChanceConstraintEncoder(self.model, self.x, f, self.training_ys, self.delta / len(self.fs), self.kernel_method).encode()
+            ChanceConstraintEncoder(self.model, self.x, f, self.training_ys, self.delta / len(self.fs), self.kernel_method).encode()
