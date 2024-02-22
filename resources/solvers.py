@@ -3,10 +3,8 @@ In this file, we write the solver for the CCO/RCCO/JCCO problems, which calls th
 """
 
 # Import necessary modules.
-import numpy as np
 import time
-import config
-from resources.quantile_encoders.chance_constraint_encoder import *
+from resources.chance_constraint_encoders import *
 from pyscipopt import Model
 
 # Hyperparameter setting:

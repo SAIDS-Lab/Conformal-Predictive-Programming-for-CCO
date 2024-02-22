@@ -155,3 +155,45 @@ class ChanceConstraintEncoder:
             self.model.addCons(self.f(self.x, self.training_ys[i]) <= config.M * (1 - zs[i]))
             self.model.addCons(self.f(self.x, self.training_ys[i]) >= config.zeta + (config.m - config.zeta) * zs[i])
         self.model.addCons(quicksum(zs[i] for i in range(self.K)) >= num_largerthan0_ceil)
+
+
+class JointChanceConstraintEncoder:
+    """
+    Encoding the joint chance constraint.
+    """
+    def __init__(self, model, x, fs, training_ys, delta, joint_method, kernel_method):
+        """
+        Initialize the encoder.
+
+        :param model: the model in which the encoded chance constraint to be added.
+        :param x: the decision variable.
+        :param fs: the chance constraints, f_js.
+        :param training_ys: the training data Y^{(1)}, ..., Y^{(K)}.
+        :param delta: the expected miscoverage rate.
+        :param joint_method: the method for JCCO rewriting, the choices include "Union", for union bound, and "Max", for mixed integer programming.
+        :param kernel_method: the kernel method for the encoding. The choices include "CPP-KKT" and "CPP-MIP".
+        """
+        # Initialize the fields.
+        self.model, self.x, self.fs, self.training_ys, self.delta, self.joint_method, self.kernel_method = model, x, fs, training_ys, delta, joint_method, kernel_method
+        # Check the presence of a valid method combination.
+        if joint_method not in ["Union", "Max"]:
+            raise Exception("The given JCCO method is not supported.")
+        if kernel_method not in ["CPP-KKT", "CPP-MIP"]:
+            raise Exception("The given encoding method is not supported.")
+
+    def encode(self):
+        """
+        Performs encoding on the joint chance constraint.
+
+        :return: the encoded model.
+        """
+        # Add the encoded constraint.
+        if self.joint_method == "Union":
+            self.__encode_for_union()
+        else:
+            self.__encode_for_max()
+        return self.model
+
+    def __encode_for_union(self):
+        for f in self.fs:
+            self.model = ChanceConstraintEncoder(self.model, self.x, f, self.training_ys, self.delta / len(self.fs), self.kernel_method).encode()
