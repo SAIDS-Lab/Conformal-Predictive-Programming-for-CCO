@@ -22,7 +22,7 @@ class ChanceConstraintEncoder:
 
         :param model: the model in which the encoded chance constraint to be added.
         :param x: the decision variable.
-        :param f: the function corresponding to the chance constraint, should be upper bounded by 0.
+        :param f: the function corresponding to the chance constraint, should be upper bounded by 0 (or mu in the case of JCCO).
         :param training_ys: the training data Y^{(1)}, ..., Y^{(K)}.
         :param delta: the expected miscoverage rate.
         :param method: the encoding method. Choices include "SA", "SAA", "CPP-KKT", and "CPP-MIP".
@@ -119,7 +119,10 @@ class ChanceConstraintEncoder:
             summation += gammas[i]
         self.model.addCons(summation == 0)
         for i in range(self.K):
-            self.model.addCons(e_pluses[i] - e_minuses[i] - self.f(self.x, self.training_ys[i]) + q == 0)
+            if callable(self.f):
+                self.model.addCons(e_pluses[i] - e_minuses[i] - self.f(self.x, self.training_ys[i]) + q == 0)
+            else:
+                self.model.addCons(e_pluses[i] - e_minuses[i] - self.f[i] + q == 0)
             self.model.addCons(e_minuses[i] >= 0)
             self.model.addCons(e_pluses[i] >= 0)
             self.model.addCons(lambdas[i] >= 0)
@@ -149,8 +152,12 @@ class ChanceConstraintEncoder:
             zs[i] = self.model.addVar(vtype="B", name="zs(%s)" % (i))
         # Add constraints.
         for i in range(self.K):
-            self.model.addCons(self.f(self.x, self.training_ys[i]) <= config.M * (1 - zs[i]))
-            self.model.addCons(self.f(self.x, self.training_ys[i]) >= config.zeta + (config.m - config.zeta) * zs[i])
+            if callable(self.f):
+                self.model.addCons(self.f(self.x, self.training_ys[i]) <= config.M * (1 - zs[i]))
+                self.model.addCons(self.f(self.x, self.training_ys[i]) >= config.zeta + (config.m - config.zeta) * zs[i])
+            else:
+                self.model.addCons(self.f[i] <= config.M * (1 - zs[i]))
+                self.model.addCons(self.f[i] >= config.zeta + (config.m - config.zeta) * zs[i])
         self.model.addCons(quicksum(zs[i] for i in range(self.K)) >= num_largerthan0_ceil)
 
 
@@ -172,6 +179,7 @@ class JointChanceConstraintEncoder:
         """
         # Initialize the fields.
         self.model, self.x, self.fs, self.training_ys, self.delta, self.joint_method, self.kernel_method = model, x, fs, training_ys, delta, joint_method, kernel_method
+        self.K = len(self.training_ys)
         # Check the presence of a valid method combination.
         if joint_method not in ["Union", "Max"]:
             raise Exception("The given JCCO method is not supported.")
@@ -181,16 +189,30 @@ class JointChanceConstraintEncoder:
     def encode(self):
         """
         Performs encoding on the joint chance constraint.
-
-        :return: the encoded model.
         """
         # Add the encoded constraint.
         if self.joint_method == "Union":
             self.__encode_for_union()
         else:
             self.__encode_for_max()
-        return self.model
 
     def __encode_for_union(self):
         for f in self.fs:
             ChanceConstraintEncoder(self.model, self.x, f, self.training_ys, self.delta / len(self.fs), self.kernel_method).encode()
+
+    def __encode_for_max(self):
+        # Initialize variables.
+        mu, sigma = {}, {}
+        for i in range(self.K):
+            mu[i] = self.model.addVar(lb=None, ub=None, vtype="C", name="mu" % (i))
+            for j in range(len(self.fs)):
+                sigma[i, j] = self.model.addVar(vtype="B", name="sigma")
+        # Perform encoding.
+        for i in range(self.K):
+            self.model.addCons(quicksum(sigma[i, j] for j in range(len(self.fs))) == 1)
+            for j in range(len(self.fs)):
+                self.model.addCons(mu[i] >= self.fs[j](self.x, self.training_ys[i]))
+                self.model.addCons(self.fs[j](self.x, self.training_ys[i]) - (1 - sigma[i, j]) * config.M <= mu[i])
+                self.model.addCons(mu[i] <= self.fs[j](self.x, self.training_ys[i]) + (1 - sigma[i, j]) * config.M)
+        for i in range(self.K):
+            ChanceConstraintEncoder(self.model, self.x, mu[i], self.training_ys, self.delta, self.kernel_method).encode()
