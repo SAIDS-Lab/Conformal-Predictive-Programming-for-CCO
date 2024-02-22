@@ -26,7 +26,7 @@ var2 = [[0.013, 0, 0], [0, 0.011, 0], [0, 0, 0.007]]
 
 def generate_random_noise_matrix_nominal():
     """
-    Generate a random noise matrix.
+    Generate a random noise matrix for the nominal distribution.
     :return: a random noise matrix.
     """
     return np.random.multivariate_normal(mean1, var1).tolist()
@@ -34,7 +34,7 @@ def generate_random_noise_matrix_nominal():
 
 def generate_random_noise_matrix_test():
     """
-    Generate a random noise matrix.
+    Generate a random noise matrix for the test distribution.
     :return: a random noise matrix.
     """
     return np.random.multivariate_normal(mean2, var2).tolist()
@@ -80,6 +80,15 @@ def h_6(x):
 
 
 def compute_divergence(mean_test, var_test, mean_train, var_train):
+    """
+    Find the KL-divergence between two Gaussian distributions.
+
+    :param mean_test: the mean of the test distribution.
+    :param var_test: the covariance of the test distribution.
+    :param mean_train: the mean of the training distribution.
+    :param var_train: the covariance of the training distribution.
+    :return: the KL divergence.
+    """
     I = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     inv_cov_test = np.linalg.inv(var_test)
     trace_term = np.trace(np.dot(inv_cov_test, var_train)-I)

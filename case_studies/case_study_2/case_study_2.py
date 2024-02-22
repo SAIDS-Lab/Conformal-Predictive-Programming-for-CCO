@@ -26,6 +26,13 @@ def generate_random_noise_matrix():
 
 
 def f(u, W):
+    """
+    The function f from the optimal control problem.
+
+    :param u: the decision variable
+    :param W: the noise.
+    :return: the function value.
+    """
     y0 = np.array([0, 0, 0, 0])
     A = np.array([[1, 1, 0, 0], [0, 1, 0, 0], [0, 0, 1, 1], [0, 0, 0, 1]])
     B = np.array([[0.5, 0], [1, 0], [0, 0.5], [0, 1]])
@@ -40,14 +47,33 @@ hs = []
 
 
 def J(u):
+    """
+    The cost function J from the optimal control problem.
+
+    :param u: the decision variable.
+    :return: the function value.
+    """
     return sum(u[t, 0] * u[t, 0] + u[t, 1] * u[t, 1] for t in range(T))
 
 
 def J_value(u):
+    """
+    The cost function J from the optimal control problem.
+
+    :param u: the decision variable.
+    :return: the function value.
+    """
     return sum(u[t][0] * u[t][0] + u[t][1] * u[t][1] for t in range(T))
 
 
 def f_value(u, W):
+    """
+    The function f from the optimal control problem.
+
+    :param u: the decision variable
+    :param W: the noise.
+    :return: the function value.
+    """
     y0 = np.array([0, 0, 0, 0])
     A = np.array([[1, 1, 0, 0], [0, 1, 0, 0], [0, 0, 1, 1], [0, 0, 0, 1]])
     B = np.array([[0.5, 0], [1, 0], [0, 0.5], [0, 1]])

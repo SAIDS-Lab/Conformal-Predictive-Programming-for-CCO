@@ -13,6 +13,27 @@ np.random.seed(config.config_seed)
 
 
 def run_experiment_step_1(N, K, V, method, delta, training_noise_generator, test_noise_generator, hs, gs, x_dim, f, J, f_value, J_value, omega = None, robust = False, epsilon = None):
+    """
+    Run the first step of the experiment.
+    :param N: the number of repetitions of the experiment.
+    :param K: the number of training data.
+    :param V: the number of test data.
+    :param method: the method to be used. Choices include "SA", "SAA", "CPP-KKT", and "CPP-MIP".
+    :param delta: the expected miscoverage rate.
+    :param training_noise_generator: the noise generator for the training data.
+    :param test_noise_generator: the noise generator for the test data.
+    :param hs: the list of deterministic inequality constraint functions, should be a function of x only and upper bounded by 0.
+    :param gs: the list of deterministic equality constraint functions, should be a function of x only and equal to 0.
+    :param x_dim: the dimension of the decision variable x.
+    :param f: the chance constraint function (compatible wih SCIP), should be a function of x and Y and upper bounded by 0.
+    :param J: the cost function (compatible wih SCIP), should be a function of x only.
+    :param f_value: the chance constraint function (that returns the value), should be a function of x and Y.
+    :param J_value: the cost function (that returns the value), should be a function of x only.
+    :param omega: the omega parameter for SAA.
+    :param robust: true or false for robust vs. not robust.
+    :param epsilon: the distribution shift to be handled by the robust encoding (in KL divergence).
+    :return: the statistics as the results of the experiment.
+    """
     # Check for the usage of omega.
     if method == "SAA" and omega is None:
         raise Exception("The omega parameter is not set for SAA.")
@@ -80,6 +101,16 @@ def run_experiment_step_1(N, K, V, method, delta, training_noise_generator, test
 
 
 def run_experiment_step_2(statistics, L, training_noise_generator, f_value, robust = False, epsilon = None):
+    """
+    Run the second step of the experiment.
+    :param statistics: the statistics from the first step of the experiment.
+    :param L: the number of calibration data.
+    :param training_noise_generator: the noise generator for the training data.
+    :param f_value: the chance constraint function (that returns the value), should be a function of x and Y.
+    :param robust: the robustness flag.
+    :param epsilon: the distribution shift to be handled by the robust encoding (in KL divergence).
+    :return: the statistics as the results of the experiment.
+    """
     step_2_statistics = dict()
     Cs = []
     posterior_coverages = []

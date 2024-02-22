@@ -71,5 +71,7 @@ for i in range(num_groups):
         results_step_2[current_k][L] = dict()
         for method in ["CPP-KKT", "CPP-MIP", "SA", "SAA_1", "SAA_2"]:
             results_step_2[current_k][L][method] = run_experiment_step_2(results_step_1[i][method], L, generate_random_noise, f_value)
+
+# Save the results from the second step.
 with open("../case_study_results/results_case_study_1/results_step_2_case_1.json", "w") as file:
     json.dump(results_step_2, file)
