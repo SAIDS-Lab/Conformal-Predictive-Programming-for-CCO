@@ -204,7 +204,7 @@ class JointChanceConstraintEncoder:
         # Initialize variables.
         mu, sigma = {}, {}
         for i in range(self.K):
-            mu[i] = self.model.addVar(lb=None, ub=None, vtype="C", name="mu" % (i))
+            mu[i] = self.model.addVar(lb=None, ub=None, vtype="C", name="mu(%s)" % (i))
             for j in range(len(self.fs)):
                 sigma[i, j] = self.model.addVar(vtype="B", name="sigma")
         # Perform encoding.
@@ -214,5 +214,4 @@ class JointChanceConstraintEncoder:
                 self.model.addCons(mu[i] >= self.fs[j](self.x, self.training_ys[i]))
                 self.model.addCons(self.fs[j](self.x, self.training_ys[i]) - (1 - sigma[i, j]) * config.M <= mu[i])
                 self.model.addCons(mu[i] <= self.fs[j](self.x, self.training_ys[i]) + (1 - sigma[i, j]) * config.M)
-        for i in range(self.K):
-            ChanceConstraintEncoder(self.model, self.x, mu[i], self.training_ys, self.delta, self.kernel_method).encode()
+        ChanceConstraintEncoder(self.model, self.x, mu, self.training_ys, self.delta, self.kernel_method).encode()

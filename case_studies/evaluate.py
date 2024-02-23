@@ -5,14 +5,14 @@ In this file, we implement the general experimental procedure from the paper det
 # Import necessary modules.
 import numpy as np
 import config
-from resources.solvers import cco_solve
+from resources.solver import solve
 from resources.robust_conformal_prediction import calculate_delta_tilde, phi
 
 # Hyperparameter setting:
 np.random.seed(config.config_seed)
 
 
-def run_experiment_step_1(N, K, V, method, delta, training_noise_generator, test_noise_generator, hs, gs, x_dim, f, J, f_value, J_value, omega = None, robust = False, epsilon = None):
+def run_experiment_step_1(N, K, V, method, delta, training_noise_generator, test_noise_generator, hs, gs, x_dim, f, J, f_value, J_value, omega = None, robust = False, epsilon = None, joint_method = None):
     """
     Run the first step of the experiment.
     :param N: the number of repetitions of the experiment.
@@ -25,9 +25,9 @@ def run_experiment_step_1(N, K, V, method, delta, training_noise_generator, test
     :param hs: the list of deterministic inequality constraint functions, should be a function of x only and upper bounded by 0.
     :param gs: the list of deterministic equality constraint functions, should be a function of x only and equal to 0.
     :param x_dim: the dimension of the decision variable x.
-    :param f: the chance constraint function (compatible wih SCIP), should be a function of x and Y and upper bounded by 0.
+    :param f: the chance constraint function (compatible wih SCIP), should be a function of x and Y and upper bounded by 0. Alternatively, this can be a list of functions in the case of JCCO (Note this requires that the function constraints satisfy simultaneously).
     :param J: the cost function (compatible wih SCIP), should be a function of x only.
-    :param f_value: the chance constraint function (that returns the value), should be a function of x and Y.
+    :param f_value: the chance constraint function (that returns the value), should be a function of x and Y. Alternatively, this can be a list of functions in the case of JCCO (Note this requires that the function constraints satisfy simultaneously).
     :param J_value: the cost function (that returns the value), should be a function of x only.
     :param omega: the omega parameter for SAA.
     :param robust: true or false for robust vs. not robust.
@@ -39,6 +39,20 @@ def run_experiment_step_1(N, K, V, method, delta, training_noise_generator, test
         raise Exception("The omega parameter is not set for SAA.")
     if method == "SAA" and (omega <= 0 or omega >= 1):
         raise Exception("The omega parameter should be in the range (0, 1).")
+
+    # Check that f_value and f are the same type.
+    if callable(f) and not callable(f_value):
+        raise Exception("The function f and f_value should be the same type.")
+    if not callable(f) and callable(f_value):
+        raise Exception("The function f and f_value should be the same type.")
+
+    # Check for joint.
+    if not callable(f_value):
+        # Check that no robust flag is set.
+        if robust or (epsilon is not None):
+            raise Exception("Robust encoding is not supported for JCCO.")
+        if joint_method is None:
+            raise Exception("The joint method is not set for JCCO.")
 
     # Record the statistics.
     num_infeasible = 0
@@ -55,7 +69,7 @@ def run_experiment_step_1(N, K, V, method, delta, training_noise_generator, test
         # Generate the training data.
         training_Ys = [training_noise_generator() for i in range(K)]
         # Run the optimization.
-        x_opt, solver_time = cco_solve(x_dim, delta, training_Ys, hs, gs, f, J, method, omega = omega, robust = robust, epsilon = epsilon)
+        x_opt, solver_time = solve(x_dim, delta, training_Ys, hs, gs, f, J, method, omega = omega, robust = robust, epsilon = epsilon, joint_method = joint_method)
         # Handle the error and infeasibility.
         if type(x_opt) == str and x_opt == "infeasible":
             print("Warning: Infeasibility to the Quantile Reformulation detected.")
@@ -77,9 +91,14 @@ def run_experiment_step_1(N, K, V, method, delta, training_noise_generator, test
         test_Ys = [test_noise_generator() for i in range(V)]
         final_test_ys.append(test_Ys)
         feasible_count = 0
-        for Y in test_Ys:
-            if f_value(x_opt, Y) <= 0:
-                feasible_count += 1
+        if callable(f_value):
+            for Y in test_Ys:
+                if f_value(x_opt, Y) <= 0:
+                    feasible_count += 1
+        else:
+            for Y in test_Ys:
+                if all([f_value[j](x_opt, Y) <= 0 for j in range(len(f_value))]):
+                    feasible_count += 1
         empirical_coverages.append(feasible_count / V)
 
     # Summarize the statistics.
@@ -100,17 +119,25 @@ def run_experiment_step_1(N, K, V, method, delta, training_noise_generator, test
     return statistics
 
 
-def run_experiment_step_2(statistics, L, training_noise_generator, f_value, robust = False, epsilon = None):
+def run_experiment_step_2(statistics, L, training_noise_generator, f_value, robust = False, epsilon = None, joint_method = None):
     """
     Run the second step of the experiment.
     :param statistics: the statistics from the first step of the experiment.
     :param L: the number of calibration data.
     :param training_noise_generator: the noise generator for the training data.
-    :param f_value: the chance constraint function (that returns the value), should be a function of x and Y.
+    :param f_value: the chance constraint function (that returns the value), should be a function of x and Y.  Alternatively, this can be a list of functions in the case of JCCO (Note this requires that the function constraints satisfy simultaneously).
     :param robust: the robustness flag.
     :param epsilon: the distribution shift to be handled by the robust encoding (in KL divergence).
     :return: the statistics as the results of the experiment.
     """
+    # Check for joint.
+    if not callable(f_value):
+        # Check that no robust flag is set.
+        if robust or (epsilon is not None):
+            raise Exception("Robust encoding is not supported for JCCO.")
+        if joint_method is None:
+            raise Exception("The joint method is not set for JCCO.")
+
     step_2_statistics = dict()
     Cs = []
     posterior_coverages = []
@@ -118,20 +145,39 @@ def run_experiment_step_2(statistics, L, training_noise_generator, f_value, robu
         # Compute the calibration data.
         x_opt = statistics["optimal_solutions"][i]
         calibration_Ys = [training_noise_generator() for l in range(L)]
-        calibration_fs = [f_value(x_opt, Y) for Y in calibration_Ys]
-        calibration_fs.sort()
-        if robust:
-            delta_tilde = calculate_delta_tilde(statistics["delta"], L, phi, epsilon)
-            p = int(np.ceil(L * (1 - delta_tilde)))
+        if callable(f_value):
+            calibration_fs = [f_value(x_opt, Y) for Y in calibration_Ys]
+            calibration_fs.sort()
+            if robust:
+                delta_tilde = calculate_delta_tilde(statistics["delta"], L, phi, epsilon)
+                p = int(np.ceil(L * (1 - delta_tilde)))
+            else:
+                p = int(np.ceil((L + 1) * (1 - statistics["delta"])))
+            c = calibration_fs[p - 1]
+        elif joint_method == "Union":
+            c_collection = []
+            for j in range(len(f_value)):
+                calibration_fs_j = [f_value[j](x_opt, Y) for Y in calibration_Ys]
+                calibration_fs_j.sort()
+                p = int(np.ceil((L + 1) * (1 - statistics["delta"])))
+                c_collection.append(calibration_fs_j[p - 1])
+            c = max(c_collection)
         else:
+            calibration_fs = [max([f_value[j](x_opt, Y) for j in range(len(f_value))]) for Y in calibration_Ys]
+            calibration_fs.sort()
             p = int(np.ceil((L + 1) * (1 - statistics["delta"])))
-        c = calibration_fs[p - 1]
+            c = calibration_fs[p - 1]
         Cs.append(c)
         # Check posterior feasibility.
         feasible_count = 0
-        for Y in statistics["final_test_Ys"][i]:
-            if f_value(x_opt, Y) <= Cs[i]:
-                feasible_count += 1
+        if callable(f_value):
+            for Y in statistics["final_test_Ys"][i]:
+                if f_value(x_opt, Y) <= Cs[i]:
+                    feasible_count += 1
+        else:
+            for Y in statistics["final_test_Ys"][i]:
+                if all([f_value[j](x_opt, Y) <= Cs[i] for j in range(len(f_value))]):
+                    feasible_count += 1
         posterior_coverages.append(feasible_count / statistics["V"])
 
     # Summarize the statistics.
