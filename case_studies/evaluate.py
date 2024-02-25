@@ -3,13 +3,17 @@ In this file, we implement the general experimental procedure from the paper det
 """
 
 # Import necessary modules.
+import sys
+sys.path.append('resources/')
+sys.path.append('/Users/xinyiyu/Library/CloudStorage/GoogleDrive-xyu07104@usc.edu/My Drive/8 - CPP/Conformal-Predictive-Programming-for-CCO/')
 import numpy as np
-import config
-from resources.solver import solve
-from resources.robust_conformal_prediction import calculate_delta_tilde, phi
+import config as config
+from solver import solve
+from robust_conformal_prediction import calculate_delta_tilde, phi
+from configuration import *
 
 # Hyperparameter setting:
-np.random.seed(config.config_seed)
+np.random.seed(config_seed)
 
 
 def run_experiment_step_1(N, K, V, method, delta, training_noise_generator, test_noise_generator, hs, gs, x_dim, f, J, f_value, J_value, omega = None, robust = False, epsilon = None, joint_method = None):

@@ -3,9 +3,12 @@ In this file we implement the functions for robust conformal prediction.
 """
 
 # Import necessary modules.
+import sys
+sys.path.append('Conformal-Predictive-Programming-for-CCO/')
+sys.path.append('resources/')
 import math
 import numpy as np
-import config
+import configuration as config
 
 # Hyperparameter setting:
 np.random.seed(config.config_seed)

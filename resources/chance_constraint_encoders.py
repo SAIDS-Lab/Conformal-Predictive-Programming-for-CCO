@@ -3,14 +3,16 @@ In this file, we write different quantile encoders for the chance constraint.
 """
 
 # Import necessary modules.
+import sys
+sys.path.append('resources/')
 import numpy as np
 from pyscipopt import quicksum
-import config
-from resources.robust_conformal_prediction import *
+from robust_conformal_prediction import *
+import configuration as config
+
 
 # Hyperparameter setting:
 np.random.seed(config.config_seed)
-
 
 class ChanceConstraintEncoder:
     """
