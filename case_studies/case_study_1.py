@@ -3,9 +3,6 @@ In this file, we implement the general nonlinear CCO problem (case 1 from the pa
 """
 
 # Import necessary modules.
-import sys
-sys.path.append('resources/')
-sys.path.append('case_studies_results/results_case_study_1/')
 import numpy as np
 # import config as config
 from evaluate import run_experiment_step_1, run_experiment_step_2

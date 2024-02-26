@@ -3,9 +3,6 @@ In this file, we implement the JCCO problem (Appendix D.5 from the paper).
 """
 
 # Import necessary modules.
-import sys
-sys.path.append('resources/')
-sys.path.append('case_studies_results/results_case_study_4/')
 import numpy as np
 from evaluate import run_experiment_step_1, run_experiment_step_2
 import scipy.stats as stats

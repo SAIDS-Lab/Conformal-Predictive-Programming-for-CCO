@@ -3,9 +3,6 @@ In this file we implement the functions for robust conformal prediction.
 """
 
 # Import necessary modules.
-import sys
-sys.path.append('Conformal-Predictive-Programming-for-CCO/')
-sys.path.append('resources/')
 import math
 import numpy as np
 import configuration as config
@@ -100,7 +97,6 @@ def calculate_delta_tilde(delta, L, phi, epsilon):
     """
     delta_n = calculate_delta_n(delta, L, phi, epsilon)
     delta_tilde = 1 - v_inverse(phi, epsilon, 1 - delta_n)
-    print("the delta_tilde is:", delta_tilde)
     return delta_tilde
 
 
