@@ -129,8 +129,8 @@ with open("case_studies_results/results_case_study_3/results_step_1.json", "w") 
 
 # Run the second step of the experiment.
 results_step_2 = dict()
-results_step_2["CPP-KKT Robust"] = run_experiment_step_2(results_step_1["CPP-KKT"], hyperparameters["L"], generate_random_noise_matrix_nominal, f, robust = True, epsilon = epsilon)
-results_step_2["CPP-MIP Robust"] = run_experiment_step_2(results_step_1["CPP-MIP"], hyperparameters["L"], generate_random_noise_matrix_nominal, f, robust = True, epsilon = epsilon)
+results_step_2["CPP-KKT Robust"] = run_experiment_step_2(results_step_1["CPP-KKT Robust"], hyperparameters["L"], generate_random_noise_matrix_nominal, f, robust = True, epsilon = epsilon)
+results_step_2["CPP-MIP Robust"] = run_experiment_step_2(results_step_1["CPP-MIP Robust"], hyperparameters["L"], generate_random_noise_matrix_nominal, f, robust = True, epsilon = epsilon)
 results_step_2["CPP-KKT"] = run_experiment_step_2(results_step_1["CPP-KKT"], hyperparameters["L"], generate_random_noise_matrix_nominal, f)
 results_step_2["CPP-MIP"] = run_experiment_step_2(results_step_1["CPP-MIP"], hyperparameters["L"], generate_random_noise_matrix_nominal, f)
 
