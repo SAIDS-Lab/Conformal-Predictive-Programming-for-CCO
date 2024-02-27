@@ -163,7 +163,7 @@ def run_experiment_step_2(statistics, L, training_noise_generator, f_value, robu
             for j in range(len(f_value)):
                 calibration_fs_j = [f_value[j](x_opt, Y) for Y in calibration_Ys]
                 calibration_fs_j.sort()
-                p = int(np.ceil((L + 1) * (1 - statistics["delta"])))
+                p = int(np.ceil((L + 1) * (1 - statistics["delta"] / len(f_value))))
                 c_collection.append(calibration_fs_j[p - 1])
             c = max(c_collection)
         else:
