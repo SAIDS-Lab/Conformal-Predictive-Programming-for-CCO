@@ -13,7 +13,7 @@ np.random.seed(config.config_seed)
 T = 5
 z = (5, 5)
 zeta = 1
-hyperparameters = {"N": 100, "K": 70, "L": 200, "V": 1000, "delta": 0.1}
+hyperparameters = {"N": 100, "K": 75, "L": 200, "V": 1000, "delta": 0.1}
 
 
 def generate_random_noise_matrix():
