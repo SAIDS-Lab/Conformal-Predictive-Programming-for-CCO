@@ -69,6 +69,9 @@ results_step_2 = dict()
 for j_method in ["CPP-MIP Union", "CPP-MIP Max"]:
     results_step_2[j_method] = dict()
     for hyperparameters in groups:
-        results_step_2[j_method][hyperparameters["K"]] = run_experiment_step_2(results_step_1[j_method][hyperparameters["K"]], hyperparameters["L"], generate_random_vector, f, joint_method = j_method)
+        if j_method == "CPP-MIP Union":
+            results_step_2[j_method][hyperparameters["K"]] = run_experiment_step_2(results_step_1[j_method][hyperparameters["K"]], hyperparameters["L"], generate_random_vector, f, joint_method = "Union")
+        else:
+            results_step_2[j_method][hyperparameters["K"]] = run_experiment_step_2(results_step_1[j_method][hyperparameters["K"]], hyperparameters["L"], generate_random_vector, f, joint_method="Max")
 with open("case_studies_results/results_case_study_4/results_step_2.json", "w") as file:
     json.dump(results_step_2, file)

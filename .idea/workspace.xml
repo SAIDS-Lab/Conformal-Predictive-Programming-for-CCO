@@ -5,13 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aa9faf0c-699b-4ab3-b347-411647cc8204" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/case_studies/evaluate.py" beforeDir="false" afterPath="$PROJECT_DIR$/case_studies/evaluate.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/case_studies_results/results_case_study_2/results_step_2.json" beforeDir="false" afterPath="$PROJECT_DIR$/case_studies_results/results_case_study_2/results_step_2.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/case_studies_results/results_case_study_3/results_step_1.json" beforeDir="false" afterPath="$PROJECT_DIR$/case_studies_results/results_case_study_3/results_step_1.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/case_studies_results/results_case_study_3/results_step_2.json" beforeDir="false" afterPath="$PROJECT_DIR$/case_studies_results/results_case_study_3/results_step_2.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/case_studies_results/results_case_study_4/results_step_1.json" beforeDir="false" afterPath="$PROJECT_DIR$/case_studies_results/results_case_study_4/results_step_1.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/case_studies_results/results_case_study_4/results_step_2.json" beforeDir="false" afterPath="$PROJECT_DIR$/case_studies_results/results_case_study_4/results_step_2.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/solver.py" beforeDir="false" afterPath="$PROJECT_DIR$/resources/solver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/case_studies/case_study_4.py" beforeDir="false" afterPath="$PROJECT_DIR$/case_studies/case_study_4.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
