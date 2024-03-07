@@ -38,6 +38,8 @@ When running the codes, please change the corresponding configuration file for y
 - We increased K from 70 to 75 for the second case study.
 - We decreased K from 80 to 75 for the third case study.
 
+## Acknowledgement
+We would like to thank our friend Yu Chen for the valuable discussions regarding the scenario approach.
 
 ## Contact Information
-[Yiqi (Nick) Zhao](https://zhaoy37.github.io/) is a PhD student for Computer Science at the University of California. For any questions or suggestions, please feel free to contact us at yiqizhao@usc.edu.
+[Yiqi (Nick) Zhao](https://zhaoy37.github.io/) and [Xinyi Yu](https://xinyi-yu.github.io/) are PhD students for Computer Science at the University of California. For any questions or suggestions, please feel free to contact us at yiqizhao@usc.edu or xinyi.yu12@usc.edu.
