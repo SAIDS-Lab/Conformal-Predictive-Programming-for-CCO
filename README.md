@@ -12,6 +12,8 @@ parameters. CPP utilizes samples from these random parameters along with the qua
 </table>
 
 ## Conformal Predictive Programming
+The codes for the solvers are included in the `resources` folder. One can access the solvers through the `solve` function provided in `resources/solver`. The `solve` function takes in the following arguments and follows the representation in Equation (3) of the paper:
 
+- x_dim: The dimension of the decision variable x. Acceptable argument is either an integer in the case when x is a scalar or a vector or a size 2 tuple in the case when x is a matrix (see case study 2).
 
 ## Contact Information
