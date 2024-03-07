@@ -12,13 +12,32 @@ parameters. CPP utilizes samples from these random parameters along with the qua
 </table>
 
 ## Conformal Predictive Programming
-The codes for the solvers are included in the `resources` folder. One can access the solvers through the `solve` function provided in `resources/solver`. The `solve` function takes in the following arguments and follows the representation in Equation (3) of the paper:
+The codes for the solvers are included in the `resources` folder. Please change the corresponding configuration file for your own system path. One can access the solvers through the `solve` function provided in `resources/solver.py`. The `solve` function takes in the following arguments and follows the representation in Equation (3) of the paper:
 
 - x_dim: The dimension of the decision variable x. Acceptable argument is either an integer in the case when x is a scalar or a vector or a size 2 tuple in the case when x is a matrix (see case study 2).
 - delta: the expected miscoverage rate.
 - training_Ys: the training data $Y^{(1)}, ..., Y^{(K)}$.
 - hs: the list of deterministic inequality constraint functions, which should be a functions of x only. The definition follows equation (3) from the paper (where the functions will be upper bounded by 0).
 - gs: the list of deterministic equality constraint functions, which should be a functions of x only. The definition follows equation (3) from the paper (where the functions will be equal to 0).
-- f: the chance constraint function. It should be 
+- f: the chance constraint function. It should be a function of x in the first argument and Y in the second argument. Alternatively, this can be a list of functions in the case of JCCO (Note this requires that the function constraints satisfy simultaneously.
+- J: the cost function, which should be a function of x only.
+- method: The method used for solving the cco. The acceptable method includes "SA" (for scenario approach), "SAA" (for sample average approach), "CPP-KKT", and "CPP-MIP". Only "CPP-KKT" and "CPP-MIP" are allowed when robust is marked true and when the joint_method is not None.
+- omega: the expected miscoverage rate for SAA.
+- robust: a boolean value indicating if the chance constraint encoding is robust.
+- epsilon: the distribution shift handeled by the robust encoding (in KL divergence).
+- joint_methodL the method used for encoding the joint chance constraint. The acceptable methods include "Union" and "Max".
+
+The function will return the solution in its first position and the solving time in the second. To illustrate how to use the solver, we provide several examples in `resources/examples`. In `example_cco.py`, we demonstrate how to solve case study 1 from the paper with K = 100. In `example_rcco.py`, we robustify the previous example with a small $\epsilon$. We also show how to use the solver to solve the problem in the case study for JCCO from the paper with K = 20.
+
+## Case Studies
+The implementation of the case studies is included in the `case_studies` folder, which one can run to reproduce the results in the paper for case study 1, case study 2 (the optimal control problem), case study 3 (the portfolio optimization problem), and case study 4 (the JCCO problem). The resulting data will be stored in `case_studies_results`. To reproduce the plots in the paper, one can run the python files in `case_studies_plotters`, which will reproduce the plots in `case_studies_plots`.
+
+When running the codes, please change the corresponding configuration file for your own system path. We remark that we made the following changes that make the results different than what we have in the paper:
+
+- We included a seed that changed the results from what we present in the paper.
+- We increased K from 70 to 75 for the second case study.
+- We decreased K from 80 to 75 for the third case study.
+
 
 ## Contact Information
+[Yiqi (Nick) Zhap](https://zhaoy37.github.io/) is a PhD student for Computer Science at the University of California. For any questions or suggestions, please feel free to contact us at yiqizhao@usc.edu.
