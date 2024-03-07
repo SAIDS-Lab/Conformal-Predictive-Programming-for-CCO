@@ -25,7 +25,7 @@ The codes for the solvers are included in the `resources` folder. Please change 
 - omega: the expected miscoverage rate for SAA.
 - robust: a boolean value indicating if the chance constraint encoding is robust.
 - epsilon: the distribution shift handeled by the robust encoding (in KL divergence).
-- joint_methodL the method used for encoding the joint chance constraint. The acceptable methods include "Union" and "Max".
+- joint_method: the method used for encoding the joint chance constraint. The acceptable methods include "Union" and "Max".
 
 The function will return the solution in its first position and the solving time in the second. To illustrate how to use the solver, we provide several examples in `resources/examples`. In `example_cco.py`, we demonstrate how to solve case study 1 from the paper with K = 100. In `example_rcco.py`, we robustify the previous example with a small $\epsilon$. We also show how to use the solver to solve the problem in the case study for JCCO from the paper with K = 20.
 
