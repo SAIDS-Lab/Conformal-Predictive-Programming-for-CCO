@@ -1,2 +1,2 @@
 # Conformal-Predictive-Programming-for-CCO
-The codes are published for using the results from the paper "Conformal Predictive Programming for Chance Constrained Optimization"
+This repository contains the implementation of the [https://arxiv.org/pdf/2402.07407.pdf](Conformal Predictive Programming for Chance Constrained Optimization). We will walk you through how to use the codes in this repository for your own project and how 
