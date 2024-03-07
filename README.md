@@ -16,6 +16,9 @@ The codes for the solvers are included in the `resources` folder. One can access
 
 - x_dim: The dimension of the decision variable x. Acceptable argument is either an integer in the case when x is a scalar or a vector or a size 2 tuple in the case when x is a matrix (see case study 2).
 - delta: the expected miscoverage rate.
-- training_Ys: the training data $Y^{(1)}$
+- training_Ys: the training data $Y^{(1)}, ..., Y^{(K)}$.
+- hs: the list of deterministic inequality constraint functions, which should be a functions of x only. The definition follows equation (3) from the paper (where the functions will be upper bounded by 0).
+- gs: the list of deterministic equality constraint functions, which should be a functions of x only. The definition follows equation (3) from the paper (where the functions will be equal to 0).
+- f: the chance constraint function. It should be 
 
 ## Contact Information
