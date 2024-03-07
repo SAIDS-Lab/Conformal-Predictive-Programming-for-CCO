@@ -40,4 +40,4 @@ When running the codes, please change the corresponding configuration file for y
 
 
 ## Contact Information
-[Yiqi (Nick) Zhap](https://zhaoy37.github.io/) is a PhD student for Computer Science at the University of California. For any questions or suggestions, please feel free to contact us at yiqizhao@usc.edu.
+[Yiqi (Nick) Zhao](https://zhaoy37.github.io/) is a PhD student for Computer Science at the University of California. For any questions or suggestions, please feel free to contact us at yiqizhao@usc.edu.
