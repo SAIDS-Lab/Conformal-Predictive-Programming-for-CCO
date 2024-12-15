@@ -86,32 +86,30 @@ def J_value(x):
     return - x[0] - 2*x[1]
 
 
-# # Run the first step of the experiment.
-# results_step_1 = dict()
-# print("Evaluating with CPP-Discard:")
-# results_step_1["CPP-Discard_m"] = run_experiment_step_1("marginal", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-Discard", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, 2, f, J, f_value, J_value)
-# results_step_1["CPP-Discard_c"] = run_experiment_step_1("conditional", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-Discard", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, 2, f, J, f_value, J_value)
-# print()
+# Run the first step of the experiment.
+results_step_1 = dict()
+print("Evaluating with CPP-Discard:")
+results_step_1["CPP-Discard_m"] = run_experiment_step_1("marginal", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-Discard", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, 2, f, J, f_value, J_value)
+results_step_1["CPP-Discard_c"] = run_experiment_step_1("conditional", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-Discard", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, 2, f, J, f_value, J_value)
+print()
 
-# print("Evaluating with CPP-KKT:")
-# results_step_1["CPP-KKT_m"] = run_experiment_step_1("marginal", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-KKT", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, 2, f, J, f_value, J_value)
-# results_step_1["CPP-KKT_c"] = run_experiment_step_1("conditional", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-KKT", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, 2, f, J, f_value, J_value)
-# print()
+print("Evaluating with CPP-KKT:")
+results_step_1["CPP-KKT_m"] = run_experiment_step_1("marginal", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-KKT", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, 2, f, J, f_value, J_value)
+results_step_1["CPP-KKT_c"] = run_experiment_step_1("conditional", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-KKT", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, 2, f, J, f_value, J_value)
+print()
 
-# print("Evaluating with CPP-MIP:")
-# results_step_1["CPP-MIP_m"] = run_experiment_step_1("marginal", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-MIP", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, 2, f, J, f_value, J_value)
-# results_step_1["CPP-MIP_c"] = run_experiment_step_1("conditional", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-MIP", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, 2, f, J, f_value, J_value)
-# print()
+print("Evaluating with CPP-MIP:")
+results_step_1["CPP-MIP_m"] = run_experiment_step_1("marginal", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-MIP", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, 2, f, J, f_value, J_value)
+results_step_1["CPP-MIP_c"] = run_experiment_step_1("conditional", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-MIP", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, 2, f, J, f_value, J_value)
+print()
 
 
-# # Save the results for the first step of the experiment.
-# with open("case_studies_results/results_case_study_1/results_step_1.json", "w") as file:
+# Save the results for the first step of the experiment.
+with open("case_studies_results/results_case_study_1/results_step_1.json", "w") as file:
+    json.dump(results_step_1, file)
+
+# with open("case_studies_results/results_case_study_1/time_test.json", "w") as file:
 #     json.dump(results_step_1, file)
-
-# # with open("case_studies_results/results_case_study_1/time_test.json", "w") as file:
-# #     json.dump(results_step_1, file)
-
-
 # print("K = ", hyperparameters["K"])
 # print("Discard average time:", sum(results_step_1["CPP-Discard_c"]["solver_times"]) / len(results_step_1["CPP-Discard_c"]["solver_times"]))
 # print("KKT average time:", sum(results_step_1["CPP-KKT_c"]["solver_times"]) / len(results_step_1["CPP-KKT_c"]["solver_times"]))

@@ -7,9 +7,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import matplotlib.patches as mpatches
+from matplotlib.ticker import MaxNLocator
 
 def main():
-    num_bins = 20
+    num_bins = 12
     font_size = 22
     label_size = 17
     legend_size = 18
@@ -48,7 +49,7 @@ def main():
         y_2, x_2 = np.histogram(results_plot_mip[i], bins=np.arange(min_value, max_value + (max_value - min_value) / num_bins,
                                             (max_value - min_value) / num_bins))
         
-        if i == 2:
+        if i == 0:
             sns.lineplot(x=x_1[:-1], y=y_1, ax = ax[i])
             ax[i].fill_between(x=x_1[:-1], y1=y_1, y2=0, alpha=0.3, label = "CPP-KKT")
             sns.lineplot(x=x_2[:-1], y=y_2, ax = ax[i])
@@ -82,6 +83,9 @@ def main():
 
     print(f"Average solving time for CPP-KKT (conditional): {np.mean(results_step_1['CPP-KKT_c']['solver_times'])}")
     print(f"Average solving time for CPP-MIP (conditional): {np.mean(results_step_1['CPP-MIP_c']['solver_times'])}")
+
+    print(f"delta star for CPP-KKT:", results_step_2["CPP-KKT"]["delta_star"])
+    print(f"delta star for CPP-MIP:", results_step_2["CPP-MIP"]["delta_star"])
 
 
 if __name__ == "__main__":

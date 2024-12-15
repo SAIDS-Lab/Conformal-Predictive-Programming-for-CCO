@@ -101,5 +101,9 @@ def main():
     print(f"Average solving time for CPP-MIP (conditional): {np.mean(results_step_1['CPP-MIP_c']['solver_times'])}")
     print(f"Average solving time for CPP-Discard (conditional): {np.mean(results_step_1['CPP-Discard_c']['solver_times'])}")
 
+    print(f"delta star for CPP-KKT:", results_step_2["CPP-KKT"]["delta_star"])
+    print(f"delta star for CPP-MIP:", results_step_2["CPP-MIP"]["delta_star"])
+    print(f"delta star for CPP-Discard:", results_step_2["CPP-Discard"]["delta_star"])
+
 if __name__ == '__main__':
     main()

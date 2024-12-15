@@ -240,7 +240,6 @@ def run_experiment_step_2(statistics_m, statistics_c, L, Z, W, beta, noise_gener
         if i == 1:
             S = sum(1 for Y in calibration_Ys if f_value(x_opt, Y) <= 0)
             delta_star = 1 - S / (L+1) + math.sqrt(math.log(1 / beta) / (2 * L))
-            print(f"delta_star in the first experiment ({statistics_c['method']}): {delta_star}")
             CEC_0_l_z = []
             for i in range(Z):
                 test_Ys = [noise_generator() for _ in range(W)]
@@ -257,4 +256,5 @@ def run_experiment_step_2(statistics_m, statistics_c, L, Z, W, beta, noise_gener
     step_2_statistics["EC"] = EC
     step_2_statistics["CEC_c"] = CEC_c
     step_2_statistics["CEC_0_l_z"] = CEC_0_l_z
+    step_2_statistics["delta_star"] = delta_star
     return step_2_statistics
