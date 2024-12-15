@@ -11,4 +11,4 @@ m = -M
 zeta = 0.00001
 
 # Hyperparameters for the solvers.
-time_limit = 100
+time_limit = 200

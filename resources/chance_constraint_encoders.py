@@ -35,7 +35,7 @@ class ChanceConstraintEncoder:
         self.robust, self.epsilon = robust, epsilon
         self.K = len(self.training_ys)
         # Check if the method selected is correct.
-        if method not in ["SA", "SAA", "CPP-KKT", "CPP-MIP"]:
+        if method not in ["SA", "SAA", "CPP-KKT", "CPP-MIP", "CPP-Discard"]:
             raise Exception("The given encoding method is not supported.")
         # Check for omega.
         if self.method == "SAA":
@@ -57,7 +57,7 @@ class ChanceConstraintEncoder:
         Performs encoding on the chance constraint.
         """
         # Add the encoded constraint.
-        if self.method == "SA":
+        if self.method == "SA" or self.method == "CPP-Discard":
             self.__encode_with_sa()
         elif self.method == "SAA":
             self.__encode_with_saa()
@@ -70,8 +70,12 @@ class ChanceConstraintEncoder:
         """
         Encode the chance constraint via SA.
         """
-        for i in range(self.K):
+        for i in range(len(self.training_ys)):
             self.model.addCons(self.f(self.x, self.training_ys[i]) <= 0)
+
+
+
+
 
     def __encode_with_saa(self):
         """
@@ -161,6 +165,8 @@ class ChanceConstraintEncoder:
         self.model.addCons(quicksum(zs[i] for i in range(self.K)) >= num_largerthan0_ceil)
 
 
+
+
 class JointChanceConstraintEncoder:
     """
     Encoding the joint chance constraint.
@@ -183,7 +189,7 @@ class JointChanceConstraintEncoder:
         # Check the presence of a valid method combination.
         if joint_method not in ["Union", "Max"]:
             raise Exception("The given JCCO method is not supported.")
-        if kernel_method not in ["CPP-KKT", "CPP-MIP"]:
+        if kernel_method not in ["CPP-KKT", "CPP-MIP", "CPP-Discard"]:
             raise Exception("The given encoding method is not supported.")
 
     def encode(self):

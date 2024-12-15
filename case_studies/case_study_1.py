@@ -1,78 +1,130 @@
 """
-In this file, we implement the general nonlinear CCO problem (case 1 from the paper).
+In this file, we implement the optimal control problem (case 2 from the paper).
 """
 
 # Import necessary modules.
 import numpy as np
-# import config as config
 from evaluate import run_experiment_step_1, run_experiment_step_2
-from pyscipopt import exp
-import math
 import json
 import configuration as config
-
-
-def generate_random_noise():
-    """
-    Generate a random noise.
-    :return: a random noise.
-    """
-    return np.random.exponential(3)
-
+import random
+import math
 
 # Experimental setting:
-np.random.seed(config.config_seed)
-hs = [lambda x: x ** 3 + 20]
+# np.random.seed(config.config_seed)
+np.random.seed(12)
+T = 5
+z = (5, 5)
+zeta = 1
+hyperparameters = {"N": 300, "K": 200, "L": 200, "V": 1000, "Z": 300, "W": 1000, "delta": 0.1, "beta": 0.1}
+
+
+def generate_random_noise_matrix():
+    """
+    Generate a random noise matrix.
+    :return: a random noise matrix.
+    """
+    # return random.uniform(15, 25)    # 0.013 17.1  19.8  (300)
+    # return np.random.laplace(50, 1)    # 0.001 0.2 0.13 (30)
+
+    # return random.uniform(0, 1)    # 0.008 5.5 3.9 (30)
+    return random.uniform(15, 16)    # 0.013 30 21 (30)
+    # return random.uniform(15, 20)   # 0.02 27 43 (30)     0.02 31  46 (30)
+    # return random.uniform(15, 30)  # 0.017 22.73 12.99 (30)
+
+    # return np.random.laplace(20, 1)   # 0.29 11 19  (30)
+    # return np.random.laplace(20, 2.5)   # 0.28 10 11  (30)
+
+    # return np.random.laplace(50, 1)    # 0.001 0.2 0.13 (30)
+    # return np.random.laplace(50, 2.5)    # 0.005 0.25 0.14 (30)
+    # return np.random.laplace(50, 5)    # 0.04 0.44 0.17 (30)
+    
+    
+    
+
+def f(x, Y):
+    """
+    The function f from the optimal control problem.
+
+    :param x: the decision variable
+    :param Y: the noise.
+    :return: the function value.
+    """
+    return (x[0] - 3)**2 + (x[1] - 5)**2 - Y
+
+def f_value(x, Y):
+    """
+    The function f from the optimal control problem.
+
+    :param x: the decision variable
+    :param Y: the noise.
+    :return: the function value.
+    """
+    return (x[0] - 3)**2 + (x[1] - 5)**2 - Y
+
 gs = []
-f = lambda x, Y: exp(x) * (50 * Y) - 5
-f_value = lambda x, Y: math.exp(x) * (50 * Y) - 5
-J = lambda x: (x ** 3) * exp(x)
-J_value = lambda x: (x ** 3) * math.exp(x)
-group_parameters = [{"N": 300, "K": 50, "V": 1000, "delta": 0.05, "saa_omega_1": 0.01, "saa_omega_2":0.03},
-                    {"N": 300, "K": 100, "V": 1000, "delta": 0.05, "saa_omega_1": 0.01, "saa_omega_2":0.03},
-                    {"N": 300, "K": 200, "V": 1000, "delta": 0.05, "saa_omega_1": 0.01, "saa_omega_2": 0.03},
-                    {"N": 300, "K": 300, "V": 1000, "delta": 0.05, "saa_omega_1": 0.01, "saa_omega_2": 0.03},
-                    {"N": 300, "K": 500, "V": 1000, "delta": 0.05, "saa_omega_1": 0.01, "saa_omega_2": 0.03}]
-num_groups = len(group_parameters)
-Ls = [50, 200, 500, 750, 1000]
+hs = []
 
-# Run the first step of the experiment.
-results_step_1 = dict()
-print("Performing the first step of the experiment with the specified group parameters.")
-for i in range(num_groups):
-    parameters = group_parameters[i]
-    print("Evaluating with parameters:", parameters)
-    results_step_1[i] = dict()
-    print("Evaluating with CPP-KKT:")
-    results_step_1[i]["CPP-KKT"] = run_experiment_step_1(parameters["N"], parameters["K"], parameters["V"], "CPP-KKT", parameters["delta"], generate_random_noise, generate_random_noise, hs, gs, 1, f, J, f_value, J_value)
-    print("Evaluating with CPP-MIP:")
-    results_step_1[i]["CPP-MIP"] = run_experiment_step_1(parameters["N"], parameters["K"], parameters["V"], "CPP-MIP", parameters["delta"], generate_random_noise, generate_random_noise, hs, gs, 1, f, J, f_value, J_value)
-    print("Evaluating with SA:")
-    results_step_1[i]["SA"] = run_experiment_step_1(parameters["N"], parameters["K"], parameters["V"], "SA", parameters["delta"], generate_random_noise, generate_random_noise, hs, gs, 1, f, J, f_value, J_value)
-    print("Evaluating with SAA with omega 1:" + str(parameters["saa_omega_1"]))
-    results_step_1[i]["SAA_1"] = run_experiment_step_1(parameters["N"], parameters["K"], parameters["V"], "SAA", parameters["delta"], generate_random_noise, generate_random_noise, hs, gs, 1, f, J, f_value, J_value, parameters["saa_omega_1"])
-    print("Evaluating with SAA with omega 2:" + str(parameters["saa_omega_2"]))
-    results_step_1[i]["SAA_2"] = run_experiment_step_1(parameters["N"], parameters["K"], parameters["V"], "SAA", parameters["delta"], generate_random_noise, generate_random_noise, hs, gs, 1, f, J, f_value, J_value, parameters["saa_omega_2"])
-    print()
 
-# Save the results from the first step.
-print("Saving the results from the first step.")
-for i in range(num_groups):
-    with open("case_studies_results/results_case_study_1/results_step_1_case_1_K=" + str(group_parameters[i]["K"]) + ".json", "w") as file:
-        json.dump(results_step_1[i], file)
-print()
+def J(x):
+    """
+    The cost function J from the optimal control problem.
+
+    :param x: the decision variable.
+    :return: the function value.
+    """
+    return - x[0] - 2*x[1]
+
+
+def J_value(x):
+    """
+    The cost function J from the optimal control problem.
+
+    :param x: the decision variable.
+    :return: the function value.
+    """
+    return - x[0] - 2*x[1]
+
+
+# # Run the first step of the experiment.
+# results_step_1 = dict()
+# print("Evaluating with CPP-Discard:")
+# results_step_1["CPP-Discard_m"] = run_experiment_step_1("marginal", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-Discard", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, 2, f, J, f_value, J_value)
+# results_step_1["CPP-Discard_c"] = run_experiment_step_1("conditional", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-Discard", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, 2, f, J, f_value, J_value)
+# print()
+
+# print("Evaluating with CPP-KKT:")
+# results_step_1["CPP-KKT_m"] = run_experiment_step_1("marginal", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-KKT", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, 2, f, J, f_value, J_value)
+# results_step_1["CPP-KKT_c"] = run_experiment_step_1("conditional", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-KKT", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, 2, f, J, f_value, J_value)
+# print()
+
+# print("Evaluating with CPP-MIP:")
+# results_step_1["CPP-MIP_m"] = run_experiment_step_1("marginal", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-MIP", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, 2, f, J, f_value, J_value)
+# results_step_1["CPP-MIP_c"] = run_experiment_step_1("conditional", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-MIP", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise_matrix, generate_random_noise_matrix, hs, gs, 2, f, J, f_value, J_value)
+# print()
+
+
+# # Save the results for the first step of the experiment.
+# with open("case_studies_results/results_case_study_1/results_step_1.json", "w") as file:
+#     json.dump(results_step_1, file)
+
+# # with open("case_studies_results/results_case_study_1/time_test.json", "w") as file:
+# #     json.dump(results_step_1, file)
+
+
+# print("K = ", hyperparameters["K"])
+# print("Discard average time:", sum(results_step_1["CPP-Discard_c"]["solver_times"]) / len(results_step_1["CPP-Discard_c"]["solver_times"]))
+# print("KKT average time:", sum(results_step_1["CPP-KKT_c"]["solver_times"]) / len(results_step_1["CPP-KKT_c"]["solver_times"]))
+# print("MIP average time:", sum(results_step_1["CPP-MIP_c"]["solver_times"]) / len(results_step_1["CPP-MIP_c"]["solver_times"]))
+
 
 # Run the second step of the experiment.
-print("Performing the second step of the experiment with the specified calibration parameters.")
+with open("case_studies_results/results_case_study_1/results_step_1.json", "r") as file:
+    results_step_1 = json.load(file)
 results_step_2 = dict()
-for i in range(num_groups):
-    current_k = group_parameters[i]["K"]
-    results_step_2[current_k] = dict()
-    for L in Ls:
-        results_step_2[current_k][L] = dict()
-        for method in ["CPP-KKT", "CPP-MIP", "SA", "SAA_1", "SAA_2"]:
-            results_step_2[current_k][L][method] = run_experiment_step_2(results_step_1[i][method], L, generate_random_noise, f_value)
-
-# Save the results from the second step.
-with open("case_studies_results/results_case_study_1/results_step_2_case_1.json", "w") as file:
+results_step_2["CPP-Discard"] = run_experiment_step_2(results_step_1["CPP-Discard_m"], results_step_1["CPP-Discard_c"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_random_noise_matrix, f_value)
+results_step_2["CPP-KKT"] = run_experiment_step_2(results_step_1["CPP-KKT_m"], results_step_1["CPP-KKT_c"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_random_noise_matrix, f_value)
+results_step_2["CPP-MIP"] = run_experiment_step_2(results_step_1["CPP-MIP_m"], results_step_1["CPP-MIP_c"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_random_noise_matrix, f_value)
+# Save the results for the second step of the experiment.
+with open("case_studies_results/results_case_study_1/results_step_2.json", "w") as file:
     json.dump(results_step_2, file)
