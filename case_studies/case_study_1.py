@@ -11,8 +11,7 @@ import random
 import math
 
 # Experimental setting:
-# np.random.seed(config.config_seed)
-np.random.seed(12)
+np.random.seed(config.config_seed)
 T = 5
 z = (5, 5)
 zeta = 1

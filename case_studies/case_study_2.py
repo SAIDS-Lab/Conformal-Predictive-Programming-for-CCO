@@ -55,16 +55,24 @@ print("KKT average time:", sum(results_step_1["CPP-KKT_c"]["solver_times"]) / le
 print("MIP average time:", sum(results_step_1["CPP-MIP_c"]["solver_times"]) / len(results_step_1["CPP-MIP_c"]["solver_times"]))
 
 
+
 # Run the second step of the experiment.
 with open("case_studies_results/results_case_study_2/results_step_1.json", "r") as file:
     results_step_1 = json.load(file)
 print("Performing the second step of the experiment with the specified calibration parameters.")
 results_step_2 = dict()
 results_step_2["CPP-KKT"] = run_experiment_step_2(results_step_1["CPP-KKT_m"], results_step_1["CPP-KKT_c"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_random_noise, f_value)
-results_step_2["CPP-MIP"] = run_experiment_step_2(results_step_1["CPP-MIP_m"], results_step_1["CPP-KKT_c"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_random_noise, f_value)
+results_step_2["CPP-MIP"] = run_experiment_step_2(results_step_1["CPP-MIP_m"], results_step_1["CPP-MIP_c"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_random_noise, f_value)
 
 # Save the results from the second step.
 with open("case_studies_results/results_case_study_2/results_step_2.json", "w") as file:
     json.dump(results_step_2, file)
+
+
+
+
+
+# compare to nonconvex SA
+
 
 

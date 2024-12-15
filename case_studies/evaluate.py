@@ -79,6 +79,7 @@ def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_
     solver_times = []
     optimal_solutions = []
     optimal_values = []
+    final_train_ys = []
     final_test_ys = []
     final_calib_ys = []
     empirical_coverages = []
@@ -88,6 +89,7 @@ def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_
         print("Performing: CPP Step 1 with n = " + str(n + 1))
         # Generate the training data.
         training_Ys = [training_noise_generator() for i in range(K)]
+        final_train_ys.append(training_Ys)
         # Run the optimization.
 
         if method != "CPP-Discard":
@@ -150,6 +152,7 @@ def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_
     statistics["num_infeasible"] = num_infeasible
     statistics["num_timeout"] = num_timeout
     statistics["empirical_coverages"] = empirical_coverages
+    statistics["final_train_Ys"] = final_train_ys
     statistics["final_test_Ys"] = final_test_ys
     statistics["final_calib_Ys"] = final_calib_ys
     
