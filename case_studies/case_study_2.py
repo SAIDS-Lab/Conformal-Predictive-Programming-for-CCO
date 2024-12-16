@@ -5,7 +5,7 @@ In this file, we implement the general nonlinear CCO problem (case 1 from the pa
 # Import necessary modules.
 import numpy as np
 # import config as config
-from evaluate import run_experiment_step_1, run_experiment_step_2
+from evaluate import run_experiment_step_1, run_experiment_step_2, compute_delta
 from pyscipopt import exp
 import math
 import json
@@ -39,10 +39,18 @@ results_step_1 = dict()
 print("Evaluating with CPP-KKT:")
 results_step_1["CPP-KKT_m"] = run_experiment_step_1("marginal", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-KKT", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise, generate_random_noise, hs, gs, 1, f, J, f_value, J_value)
 results_step_1["CPP-KKT_c"] = run_experiment_step_1("conditional", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-KKT", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise, generate_random_noise, hs, gs, 1, f, J, f_value, J_value)
+print()
 
 print("Evaluating with CPP-MIP:")
 results_step_1["CPP-MIP_m"] = run_experiment_step_1("marginal", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-MIP", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise, generate_random_noise, hs, gs, 1, f, J, f_value, J_value)
 results_step_1["CPP-MIP_c"] = run_experiment_step_1("conditional", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-MIP", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise, generate_random_noise, hs, gs, 1, f, J, f_value, J_value)
+print()
+
+print("Evaluating with nonconvex-SA:")
+results_step_1["SA"] = run_experiment_step_1("marginal", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "SA", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise, generate_random_noise, hs, gs, 1, f, J, f_value, J_value)
+print()
+print("Evaluating with nonconvex-SA support:")
+results_step_1["SA"] = compute_delta(results_step_1["SA"], results_step_1["SA"]["final_train_Ys"], hs, gs, 1, f, J, hyperparameters["beta"], hyperparameters["K"])
 print()
 
 # Save the results from the first step.
@@ -53,6 +61,7 @@ print()
 
 print("KKT average time:", sum(results_step_1["CPP-KKT_c"]["solver_times"]) / len(results_step_1["CPP-KKT_c"]["solver_times"]))
 print("MIP average time:", sum(results_step_1["CPP-MIP_c"]["solver_times"]) / len(results_step_1["CPP-MIP_c"]["solver_times"]))
+print("SA average time:", sum(results_step_1["SA"]["solver_times"]) / len(results_step_1["SA"]["solver_times"]))
 
 
 
@@ -71,8 +80,6 @@ with open("case_studies_results/results_case_study_2/results_step_2.json", "w") 
 
 
 
-
-# compare to nonconvex SA
 
 
 

@@ -12,6 +12,10 @@ from solver import solve
 from robust_conformal_prediction import calculate_delta_tilde, phi
 from configuration import *
 import math
+from pyscipopt import Model
+import configuration as config
+import time
+
 
 # Hyperparameter setting:
 np.random.seed(config_seed)
@@ -224,8 +228,11 @@ def run_experiment_step_2(statistics_m, statistics_c, L, Z, W, beta, noise_gener
     ################# conditional evaluation #################
     Cs_c = []
     CEC_c = []
+    delta_star = []
+    delta_comp_time = []
     for i in range(len(statistics_c["optimal_solutions"])):
         # Compute the calibration data.
+        
         x_opt = statistics_c["optimal_solutions"][i]
         calibration_Ys = statistics_c["final_calib_Ys"][i]
         calibration_fs = [f_value(x_opt, Y) for Y in calibration_Ys]
@@ -234,21 +241,24 @@ def run_experiment_step_2(statistics_m, statistics_c, L, Z, W, beta, noise_gener
         p_c = int(np.ceil((L + 1) * (1 - statistics_c["delta"] + math.sqrt(math.log(1 / beta) / (2 * L))))) 
         c_c = calibration_fs[p_c - 1]
         Cs_c.append(c_c)
+        
 
         # CEC_{c,i}
         feasible_count = sum(1 for Y in statistics_c["final_test_Ys"][i] if f_value(x_opt, Y) <= Cs_c[i])
         CEC_c.append(feasible_count / statistics_c["V"])
 
         # compute delta for Theorem 3.5
+        time_start = time.time()
+        S = sum(1 for Y in calibration_Ys if f_value(x_opt, Y) <= 0)
+        delta_star.append(1 - S / (L+1) + math.sqrt(math.log(1 / beta) / (2 * L)))
+        time_end = time.time()
+        delta_comp_time.append(time_end - time_start)
         if i == 1:
-            S = sum(1 for Y in calibration_Ys if f_value(x_opt, Y) <= 0)
-            delta_star = 1 - S / (L+1) + math.sqrt(math.log(1 / beta) / (2 * L))
             CEC_0_l_z = []
             for i in range(Z):
                 test_Ys = [noise_generator() for _ in range(W)]
                 feasible_count = sum(1 for Y in test_Ys if f_value(x_opt, Y) <= 0)
                 CEC_0_l_z.append(feasible_count / W)
-
 
 
     # Summarize the statistics.
@@ -260,4 +270,70 @@ def run_experiment_step_2(statistics_m, statistics_c, L, Z, W, beta, noise_gener
     step_2_statistics["CEC_c"] = CEC_c
     step_2_statistics["CEC_0_l_z"] = CEC_0_l_z
     step_2_statistics["delta_star"] = delta_star
+    step_2_statistics["delta_comp_time"] = delta_comp_time
     return step_2_statistics
+
+
+
+def compute_delta(statistics, training_ys, hs, gs, x_dim, f, J, beta, K):
+    sup = []
+    sup_comp_time = []
+    delta1_comp_time = []
+    delta2_comp_time = []
+    delta_nonconvexsa_1 = []
+    delta_nonconvexsa_2 = []
+    for i in range(len(statistics["optimal_solutions"])):
+        print("Computing support with n = " + str(i + 1))
+        x_opt = statistics["optimal_solutions"][i]
+
+        # Compute the support.
+        time_start = time.time()
+        indices_to_remove = []
+        for j in range(len(training_ys[i])):
+            training_ys_prime = [item for idx, item in enumerate(training_ys[i]) if (idx not in indices_to_remove) and (idx != j)]
+            delta = 0.1 # this is a useless parameter in the following function
+            x_opt_new, _ = solve(x_dim, delta, training_ys_prime, hs, gs, f, J, "SA", omega = None, robust = False, epsilon = None, joint_method = None)
+            if x_opt == x_opt_new: # I do not consider the different cases of x_dim here.
+                indices_to_remove.append(j)
+        sup.append([item for idx, item in enumerate(training_ys[i]) if idx not in indices_to_remove])
+        s_K_star = len(sup[i])
+        time_end = time.time()
+        sup_comp_time.append(time_end - time_start)
+
+        # Compute epsilon_1.
+        time_start = time.time()
+        if s_K_star == K:
+            delta_nonconvexsa_1.append(1)
+        else:
+            delta_nonconvexsa_1.append(1 - (beta/(K*math.comb(K, s_K_star)))**(1 / (K - s_K_star)))
+        # print("epsilon_1:", delta_nonconvexsa_1[i])
+        time_end = time.time()
+        delta1_comp_time.append(time_end - time_start)
+
+        # Compute epsilon_2.
+        time_start = time.time()
+        coefficients = []
+        for m in range(s_K_star, K): 
+            coefficients.append((beta / K) * math.comb(m, s_K_star))
+        coefficients.append(-math.comb(K, s_K_star))
+        polynomial = [0] * (K - s_K_star - len(coefficients)) + coefficients[::-1]
+        roots = np.roots(polynomial)
+        real_roots = roots[np.isclose(roots.imag, 0)].real 
+        real_roots_in_interval = real_roots[(real_roots > 0) & (real_roots < 1)]  # as described in the paper, they would have and only have one real root in (0,1)
+        if s_K_star == K:
+            delta_nonconvexsa_2.append(1)
+        else:
+            delta_nonconvexsa_2.append(1 - real_roots_in_interval[0])
+        # print("epsilon_2:", delta_nonconvexsa_2[i])
+        time_end = time.time()
+        delta2_comp_time.append(time_end - time_start)
+
+    
+    statistics["sup"] = sup
+    statistics["sup_comp_time"] = sup_comp_time
+    statistics["delta1_comp_time"] = delta1_comp_time
+    statistics["delta2_comp_time"] = delta2_comp_time
+    statistics["epsilon_1"] = delta_nonconvexsa_1
+    statistics["epsilon_2"] = delta_nonconvexsa_2
+
+    return statistics
