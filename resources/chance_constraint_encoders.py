@@ -38,8 +38,8 @@ class ChanceConstraintEncoder:
             raise Exception("The given encoding method is not supported.")
         # Check for robust.
         if self.robust:
-            if method == "SA":
-                raise Exception("Robust encoding is not supported for SA.")
+            if method == "SA" or method == "CPP-Discard":
+                raise Exception("Robust encoding is not supported for SA and CPP-Discarding (for implementation only).")
             if self.epsilon is None:
                 raise Exception("The epsilon parameter is not set for robust chance constraint encoding.")
             if self.epsilon <= 0:

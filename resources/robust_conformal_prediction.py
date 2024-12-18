@@ -5,6 +5,9 @@ In this file we implement the functions for robust conformal prediction.
 # Import necessary modules.
 import math
 import numpy as np
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import configuration as config
 
 # Hyperparameter setting:

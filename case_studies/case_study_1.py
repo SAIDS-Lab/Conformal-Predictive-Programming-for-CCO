@@ -6,12 +6,16 @@ In this file, we implement the optimal control problem (case 2 from the paper).
 import numpy as np
 from evaluate import run_experiment_step_1, run_experiment_step_2
 import json
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 import configuration as config
 import random
 import math
 
 # Experimental setting:
 np.random.seed(config.config_seed)
+random.seed(config.config_seed)
 T = 5
 z = (5, 5)
 zeta = 1
@@ -97,9 +101,9 @@ with open("case_studies_results/results_case_study_1/results_step_1.json", "w") 
 with open("case_studies_results/results_case_study_1/results_step_1.json", "r") as file:
     results_step_1 = json.load(file)
 results_step_2 = dict()
-results_step_2["CPP-Discard"] = run_experiment_step_2(results_step_1["CPP-Discard_m"], results_step_1["CPP-Discard_c"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_random_noise_matrix, f_value)
-results_step_2["CPP-KKT"] = run_experiment_step_2(results_step_1["CPP-KKT_m"], results_step_1["CPP-KKT_c"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_random_noise_matrix, f_value)
-results_step_2["CPP-MIP"] = run_experiment_step_2(results_step_1["CPP-MIP_m"], results_step_1["CPP-MIP_c"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_random_noise_matrix, f_value)
+results_step_2["CPP-Discard"] = run_experiment_step_2(results_step_1["CPP-Discard_m"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_random_noise_matrix, f_value, statistics_c=results_step_1["CPP-Discard_c"])
+results_step_2["CPP-KKT"] = run_experiment_step_2(results_step_1["CPP-KKT_m"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_random_noise_matrix, f_value, statistics_c=results_step_1["CPP-KKT_c"])
+results_step_2["CPP-MIP"] = run_experiment_step_2(results_step_1["CPP-MIP_m"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_random_noise_matrix, f_value, statistics_c=results_step_1["CPP-MIP_c"])
 # Save the results for the second step of the experiment.
 with open("case_studies_results/results_case_study_1/results_step_2.json", "w") as file:
     json.dump(results_step_2, file)

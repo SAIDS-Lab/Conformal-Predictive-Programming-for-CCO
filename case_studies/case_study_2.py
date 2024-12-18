@@ -9,6 +9,9 @@ from evaluate import run_experiment_step_1, run_experiment_step_2, compute_delta
 from pyscipopt import exp
 import math
 import json
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 import configuration as config
 
 
@@ -64,8 +67,8 @@ with open("case_studies_results/results_case_study_2/results_step_1.json", "r") 
     results_step_1 = json.load(file)
 print("Performing the second step of the experiment with the specified calibration parameters.")
 results_step_2 = dict()
-results_step_2["CPP-KKT"] = run_experiment_step_2(results_step_1["CPP-KKT_m"], results_step_1["CPP-KKT_c"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_random_noise, f_value)
-results_step_2["CPP-MIP"] = run_experiment_step_2(results_step_1["CPP-MIP_m"], results_step_1["CPP-MIP_c"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_random_noise, f_value)
+results_step_2["CPP-KKT"] = run_experiment_step_2(results_step_1["CPP-KKT_m"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_random_noise, f_value, statistics_c=results_step_1["CPP-KKT_c"])
+results_step_2["CPP-MIP"] = run_experiment_step_2(results_step_1["CPP-MIP_m"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_random_noise, f_value, statistics_c=results_step_1["CPP-MIP_c"])
 print("Evaluating with nonconvex-SA delta:")
 results_step_2["SA"] = compute_delta(results_step_1["SA"], results_step_1["SA"]["final_train_Ys"], hs, gs, 1, f, J, hyperparameters["beta"], hyperparameters["K"])
 print()

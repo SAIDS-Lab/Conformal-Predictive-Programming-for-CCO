@@ -56,6 +56,8 @@ def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_
 
     # adjust the delta for the conditional case
     if mode == "conditional":
+        if robust:
+            raise Exception("Robust encoding is not supported for the conditional case.")
         delta = delta - math.sqrt(math.log(1 / beta) / (2 * K))
     
     # Check on the mode.
@@ -154,7 +156,7 @@ def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_
     return statistics
 
 
-def run_experiment_step_2(statistics_m, statistics_c, L, Z, W, beta, test_noise_generator, f_value, robust = False, epsilon = None, joint_method = None):
+def run_experiment_step_2(statistics_m, L, Z, W, beta, test_noise_generator, f_value, robust = False, epsilon = None, joint_method = None, statistics_c = None):
     """
     Run the second step of the experiment.
     :param statistics_m: the marginal statistics from the first step of the experiment.
@@ -178,6 +180,11 @@ def run_experiment_step_2(statistics_m, statistics_c, L, Z, W, beta, test_noise_
             raise Exception("Robust encoding is not supported for JCCO.")
         if joint_method is None:
             raise Exception("The joint method is not set for JCCO.")
+    
+    # Check statistics_c is included.
+    if robust is not None and joint_method is not None:
+        if statistics_c is None:
+            raise Exception("The conditional statistics are not included.")
             
 
     ################# marginal evaluation #################
@@ -209,37 +216,38 @@ def run_experiment_step_2(statistics_m, statistics_c, L, Z, W, beta, test_noise_
     EC = EC_count / (len(statistics_m["optimal_solutions"]))
 
     ################# conditional evaluation #################
-    Cs_c = []
-    CEC_c = []
-    delta_star = []
-    delta_comp_time = []
-    for i in range(len(statistics_c["optimal_solutions"])):
-        # Compute the calibration data.
-        x_opt = statistics_c["optimal_solutions"][i]
-        calibration_Ys = statistics_c["final_calib_Ys"][i]
-        calibration_fs = [f_value(x_opt, Y) for Y in calibration_Ys]
-        calibration_fs.sort()
-        # To Nick: Please add the p_c and c_c for other cases in this for loop, as the above for loop.
-        p_c = int(np.ceil((L + 1) * (1 - statistics_c["delta"] + math.sqrt(math.log(1 / beta) / (2 * L))))) 
-        c_c = calibration_fs[p_c - 1]
-        Cs_c.append(c_c)
+    if not robust and not joint_method:
+        Cs_c = []
+        CEC_c = []
+        delta_star = []
+        delta_comp_time = []
+        for i in range(len(statistics_c["optimal_solutions"])):
+            # Compute the calibration data.
+            x_opt = statistics_c["optimal_solutions"][i]
+            calibration_Ys = statistics_c["final_calib_Ys"][i]
+            calibration_fs = [f_value(x_opt, Y) for Y in calibration_Ys]
+            calibration_fs.sort()
+            # To Nick: Please add the p_c and c_c for other cases in this for loop, as the above for loop.
+            p_c = int(np.ceil((L + 1) * (1 - statistics_c["delta"] + math.sqrt(math.log(1 / beta) / (2 * L))))) 
+            c_c = calibration_fs[p_c - 1]
+            Cs_c.append(c_c)
 
-        # CEC_{c,i}
-        feasible_count = sum(1 for Y in statistics_c["final_test_Ys"][i] if f_value(x_opt, Y) <= c_c)
-        CEC_c.append(feasible_count / statistics_c["V"])
+            # CEC_{c,i}
+            feasible_count = sum(1 for Y in statistics_c["final_test_Ys"][i] if f_value(x_opt, Y) <= c_c)
+            CEC_c.append(feasible_count / statistics_c["V"])
 
-        # compute delta^* for Theorem 3.5
-        time_start = time.time()
-        S = sum(1 for Y in calibration_Ys if f_value(x_opt, Y) <= 0)
-        delta_star.append(1 - S / (L+1) + math.sqrt(math.log(1 / beta) / (2 * L)))
-        time_end = time.time()
-        delta_comp_time.append(time_end - time_start)
-        if i == 0:
-            CEC_0_l_z = []
-            for i in range(Z):
-                test_Ys = [test_noise_generator() for _ in range(W)]
-                feasible_count = sum(1 for Y in test_Ys if f_value(x_opt, Y) <= 0)
-                CEC_0_l_z.append(feasible_count / W)
+            # compute delta^* for Theorem 3.5
+            time_start = time.time()
+            S = sum(1 for Y in calibration_Ys if f_value(x_opt, Y) <= 0)
+            delta_star.append(1 - S / (L+1) + math.sqrt(math.log(1 / beta) / (2 * L)))
+            time_end = time.time()
+            delta_comp_time.append(time_end - time_start)
+            if i == 0:
+                CEC_0_l_z = []
+                for i in range(Z):
+                    test_Ys = [test_noise_generator() for _ in range(W)]
+                    feasible_count = sum(1 for Y in test_Ys if f_value(x_opt, Y) <= 0)
+                    CEC_0_l_z.append(feasible_count / W)
 
 
     # Summarize the statistics.
@@ -251,10 +259,14 @@ def run_experiment_step_2(statistics_m, statistics_c, L, Z, W, beta, test_noise_
     step_2_statistics["Cs_m"] = Cs_m
     step_2_statistics["Cs_c"] = Cs_c
     step_2_statistics["EC"] = EC
-    step_2_statistics["CEC_c"] = CEC_c
-    step_2_statistics["CEC_0_l_z"] = CEC_0_l_z
-    step_2_statistics["delta_star"] = delta_star
-    step_2_statistics["delta_comp_time"] = delta_comp_time
+    if robust:
+        step_2_statistics["delta_tilde"] = delta_tilde
+        step_2_statistics["epsilon"] = epsilon
+    if not robust and not joint_method:
+        step_2_statistics["CEC_c"] = CEC_c
+        step_2_statistics["CEC_0_l_z"] = CEC_0_l_z
+        step_2_statistics["delta_star"] = delta_star
+        step_2_statistics["delta_comp_time"] = delta_comp_time
     return step_2_statistics
 
 
