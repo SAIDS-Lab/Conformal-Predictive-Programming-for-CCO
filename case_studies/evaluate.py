@@ -21,15 +21,18 @@ import time
 np.random.seed(config_seed)
 
 
-def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_generator, test_noise_generator, hs, gs, x_dim, f, J, f_value, J_value, omega = None, robust = False, epsilon = None, joint_method = None):
+def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_generator, test_noise_generator, hs, gs, x_dim, f, J, f_value, J_value, robust = False, epsilon = None, joint_method = None):
     """
     Run the first step of the experiment.
+    :param mode: the mode of the experiment. Choices include "marginal" and "conditional".
     :param N: the number of repetitions of the experiment.
     :param K: the number of training data.
+    :param L: the number of calibration data.
     :param V: the number of test data.
-    :param method: the method to be used. Choices include "SA", "SAA", "CPP-KKT", and "CPP-MIP".
-    :param delta: the expected miscoverage rate.
-    :param training_noise_generator: the noise generator for the training data.
+    :param method: the method to be used. Choices include "CPP-KKT", "CPP-MIP", "CPP-Discard", and "SA".
+    :param delta: the expected miscoverage rate (raw).
+    :param beta: the expected misconfidence rate (raw).
+    :param training_noise_generator: the noise generator for the training and calibration data.
     :param test_noise_generator: the noise generator for the test data.
     :param hs: the list of deterministic inequality constraint functions, should be a function of x only and upper bounded by 0.
     :param gs: the list of deterministic equality constraint functions, should be a function of x only and equal to 0.
@@ -38,9 +41,9 @@ def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_
     :param J: the cost function (compatible wih SCIP), should be a function of x only.
     :param f_value: the chance constraint function (that returns the value), should be a function of x and Y. Alternatively, this can be a list of functions in the case of JCCO (Note this requires that the function constraints satisfy simultaneously).
     :param J_value: the cost function (that returns the value), should be a function of x only.
-    :param omega: the omega parameter for SAA.
     :param robust: true or false for robust vs. not robust.
-    :param epsilon: the distribution shift to be handled by the robust encoding (in KL divergence).
+    :param epsilon: the distribution shift to be handled by the robust encoding (in total variation distance).
+    :param joint_method: if the joint method is used or not.
     :return: the statistics as the results of the experiment.
     """
     statistics = dict()
@@ -50,17 +53,18 @@ def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_
     statistics["V"] = V
     statistics["delta"] = delta
     statistics["method"] = method
-    statistics["omega"] = omega
 
     # adjust the delta for the conditional case
     if mode == "conditional":
         delta = delta - math.sqrt(math.log(1 / beta) / (2 * K))
-
-    # Check for the usage of omega.
-    if method == "SAA" and omega is None:
-        raise Exception("The omega parameter is not set for SAA.")
-    if method == "SAA" and (omega <= 0 or omega >= 1):
-        raise Exception("The omega parameter should be in the range (0, 1).")
+    
+    # Check on the mode.
+    if mode not in ["marginal", "conditional"]:
+        raise Exception("The mode is not recognized.")
+    
+    # Check on the method.
+    if method not in ["CPP-KKT", "CPP-MIP", "CPP-Discard", "SA"]:
+        raise Exception("The method is not recognized.")
 
     # Check that f_value and f are the same type.
     if callable(f) and not callable(f_value):
@@ -86,20 +90,19 @@ def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_
     final_train_ys = []
     final_test_ys = []
     final_calib_ys = []
-    empirical_coverages = []
 
     # Compute solutions.
     for n in range(N):
         print("Performing: CPP Step 1 with n = " + str(n + 1))
         # Generate the training data.
         training_Ys = [training_noise_generator() for i in range(K)]
-        final_train_ys.append(training_Ys)
+        final_train_ys.append(training_Ys.copy())
         # Run the optimization.
 
         if method != "CPP-Discard":
-            x_opt, solver_time = solve(x_dim, delta, training_Ys, hs, gs, f, J, method, omega = omega, robust = robust, epsilon = epsilon, joint_method = joint_method)
+            x_opt, solver_time = solve(x_dim, delta, training_Ys, hs, gs, f, J, method, robust = robust, epsilon = epsilon, joint_method = joint_method)
         else:
-            x_opt, solver_time_once = solve(x_dim, delta, training_Ys, hs, gs, f, J, "CPP-Discard", omega = omega, robust = robust, epsilon = epsilon, joint_method = joint_method)
+            x_opt, solver_time_once = solve(x_dim, delta, training_Ys, hs, gs, f, J, "CPP-Discard", robust = robust, epsilon = epsilon, joint_method = joint_method)
             solver_time = solver_time_once
             while len(training_Ys) > int(np.ceil((K + 1) * (1 - delta))):
                 if x_opt == "infeasible":
@@ -112,7 +115,7 @@ def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_
                         break
                 if flag == 0:
                     break
-                x_opt, solver_time_once = solve(x_dim, delta, training_Ys, hs, gs, f, J, "CPP-Discard", omega = omega, robust = robust, epsilon = epsilon, joint_method = joint_method)
+                x_opt, solver_time_once = solve(x_dim, delta, training_Ys, hs, gs, f, J, "CPP-Discard", robust = robust, epsilon = epsilon, joint_method = joint_method)
                 solver_time += solver_time_once
 
 
@@ -133,21 +136,10 @@ def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_
         optimal_solutions.append(x_opt)
         # Record the optimal value.
         optimal_values.append(J_value(x_opt))
-        # Check feasibility.
         test_Ys = [test_noise_generator() for i in range(V)]
         final_test_ys.append(test_Ys)
-        calib_Ys = [test_noise_generator() for i in range(L)]
+        calib_Ys = [training_noise_generator() for i in range(L)]
         final_calib_ys.append(calib_Ys)
-        feasible_count = 0
-        if callable(f_value):
-            for Y in test_Ys:
-                if f_value(x_opt, Y) <= 0:
-                    feasible_count += 1
-        else:
-            for Y in test_Ys:
-                if all([f_value[j](x_opt, Y) <= 0 for j in range(len(f_value))]):
-                    feasible_count += 1
-        empirical_coverages.append(feasible_count / V)
 
     # Summarize the statistics.
     statistics["solver_times"] = solver_times
@@ -155,7 +147,6 @@ def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_
     statistics["optimal_values"] = optimal_values
     statistics["num_infeasible"] = num_infeasible
     statistics["num_timeout"] = num_timeout
-    statistics["empirical_coverages"] = empirical_coverages
     statistics["final_train_Ys"] = final_train_ys
     statistics["final_test_Ys"] = final_test_ys
     statistics["final_calib_Ys"] = final_calib_ys
@@ -163,15 +154,20 @@ def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_
     return statistics
 
 
-def run_experiment_step_2(statistics_m, statistics_c, L, Z, W, beta, noise_generator, f_value, robust = False, epsilon = None, joint_method = None):
+def run_experiment_step_2(statistics_m, statistics_c, L, Z, W, beta, test_noise_generator, f_value, robust = False, epsilon = None, joint_method = None):
     """
     Run the second step of the experiment.
-    :param statistics: the statistics from the first step of the experiment.
+    :param statistics_m: the marginal statistics from the first step of the experiment.
+    :param statistics_c: the conditional statistics from the first step of the experiment.
     :param L: the number of calibration data.
-    :param noise_generator: the noise generator for the training data.
+    :param Z: the number of experiments for delta_star.
+    :param W: the number of test data for the computation of CEC_0.
+    :param beta: the expected misconfidence rate (raw).
+    :param test_noise_generator: the noise generator for the test data.
     :param f_value: the chance constraint function (that returns the value), should be a function of x and Y.  Alternatively, this can be a list of functions in the case of JCCO (Note this requires that the function constraints satisfy simultaneously).
     :param robust: the robustness flag.
     :param epsilon: the distribution shift to be handled by the robust encoding (in KL divergence).
+    :param joint_method: the joint method or not.
     :return: the statistics as the results of the experiment.
     """
 
@@ -201,23 +197,10 @@ def run_experiment_step_2(statistics_m, statistics_c, L, Z, W, beta, noise_gener
             else:
                 p_m = int(np.ceil((L + 1) * (1 - statistics_m["delta"])))
             c_m = calibration_fs[p_m - 1]
-        elif joint_method == "Union":
-            c_collection = []
-            for j in range(len(f_value)):
-                calibration_fs_j = [f_value[j](x_opt, Y) for Y in calibration_Ys]
-                calibration_fs_j.sort()
-                p_m = int(np.ceil((L + 1) * (1 - statistics_m["delta"] / len(f_value))))
-                c_collection.append(calibration_fs_j[p_m - 1])
-            c_m = max(c_collection)
-        else:
-            calibration_fs = [max([f_value[j](x_opt, Y) for j in range(len(f_value))]) for Y in calibration_Ys]
-            calibration_fs.sort()
-            p_m = int(np.ceil((L + 1) * (1 - statistics_m["delta"])))
-            c_m = calibration_fs[p_m - 1]
+        # To Nick: Please add the uncallable case here.
         Cs_m.append(c_m)
         # Check posterior feasibility.
         # EC
-        # To Nick: Please add the uncallable case here.
         if callable(f_value):
             Y = statistics_m["final_test_Ys"][i][0] # pick the first data as the test data in the EC
             if f_value(x_opt, Y) <= Cs_m[i]:
@@ -232,7 +215,6 @@ def run_experiment_step_2(statistics_m, statistics_c, L, Z, W, beta, noise_gener
     delta_comp_time = []
     for i in range(len(statistics_c["optimal_solutions"])):
         # Compute the calibration data.
-        
         x_opt = statistics_c["optimal_solutions"][i]
         calibration_Ys = statistics_c["final_calib_Ys"][i]
         calibration_fs = [f_value(x_opt, Y) for Y in calibration_Ys]
@@ -241,22 +223,21 @@ def run_experiment_step_2(statistics_m, statistics_c, L, Z, W, beta, noise_gener
         p_c = int(np.ceil((L + 1) * (1 - statistics_c["delta"] + math.sqrt(math.log(1 / beta) / (2 * L))))) 
         c_c = calibration_fs[p_c - 1]
         Cs_c.append(c_c)
-        
 
         # CEC_{c,i}
-        feasible_count = sum(1 for Y in statistics_c["final_test_Ys"][i] if f_value(x_opt, Y) <= Cs_c[i])
+        feasible_count = sum(1 for Y in statistics_c["final_test_Ys"][i] if f_value(x_opt, Y) <= c_c)
         CEC_c.append(feasible_count / statistics_c["V"])
 
-        # compute delta for Theorem 3.5
+        # compute delta^* for Theorem 3.5
         time_start = time.time()
         S = sum(1 for Y in calibration_Ys if f_value(x_opt, Y) <= 0)
         delta_star.append(1 - S / (L+1) + math.sqrt(math.log(1 / beta) / (2 * L)))
         time_end = time.time()
         delta_comp_time.append(time_end - time_start)
-        if i == 1:
+        if i == 0:
             CEC_0_l_z = []
             for i in range(Z):
-                test_Ys = [noise_generator() for _ in range(W)]
+                test_Ys = [test_noise_generator() for _ in range(W)]
                 feasible_count = sum(1 for Y in test_Ys if f_value(x_opt, Y) <= 0)
                 CEC_0_l_z.append(feasible_count / W)
 
@@ -264,6 +245,9 @@ def run_experiment_step_2(statistics_m, statistics_c, L, Z, W, beta, noise_gener
     # Summarize the statistics.
     step_2_statistics["L"] = L
     step_2_statistics["K"] = statistics_m["K"]
+    step_2_statistics["V"] = statistics_m["V"]
+    step_2_statistics["Z"] = Z
+    step_2_statistics["W"] = W
     step_2_statistics["Cs_m"] = Cs_m
     step_2_statistics["Cs_c"] = Cs_c
     step_2_statistics["EC"] = EC
@@ -272,7 +256,6 @@ def run_experiment_step_2(statistics_m, statistics_c, L, Z, W, beta, noise_gener
     step_2_statistics["delta_star"] = delta_star
     step_2_statistics["delta_comp_time"] = delta_comp_time
     return step_2_statistics
-
 
 
 def compute_delta(statistics, training_ys, hs, gs, x_dim, f, J, beta, K):

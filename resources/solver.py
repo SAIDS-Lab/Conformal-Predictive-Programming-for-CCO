@@ -12,7 +12,7 @@ import configuration as config
 np.random.seed(config.config_seed)
 
 
-def solve(x_dim, delta, training_Ys, hs, gs, f, J, method, omega = None, robust = False, epsilon = None, joint_method = None):
+def solve(x_dim, delta, training_Ys, hs, gs, f, J, method, robust = False, epsilon = None, joint_method = None):
     """
     Solve the CCO problem.
 
@@ -23,8 +23,7 @@ def solve(x_dim, delta, training_Ys, hs, gs, f, J, method, omega = None, robust 
     :param gs: the list of deterministic equality constraint functions, should be a function of x only and equal to 0.
     :param f: the chance constraint function, should be a function of x and Y and upper bounded by 0. Alternatively, this can be a list of functions in the case of JCCO (Note this requires that the function constraints satisfy simultaneously).
     :param J: the cost function, should be a function of x only.
-    :param method: the method used for solving the cco. The acceptable method includes "SA", "SAA", "CPP-KKT", and "CPP-MIP".
-    :param omega: the omega parameter for SAA.
+    :param method: the method used for solving the cco. The acceptable method includes "SA", "CPP-KKT", and "CPP-MIP".
     :param robust: whether the chance constraint encoding is robust.
     :param epsilon: distribution shift to be handled by the robust encoding (in KL divergence).
     :param joint_method: the method used for encoding the joint chance constraint. The acceptable methods include "Union" and "Max".
@@ -56,7 +55,7 @@ def solve(x_dim, delta, training_Ys, hs, gs, f, J, method, omega = None, robust 
         model.addCons(g(x) == 0)
     # Encode chance constraint.
     if callable(f):
-        ChanceConstraintEncoder(model, x, f, training_Ys, delta, method, omega = omega, robust = robust, epsilon = epsilon).encode()
+        ChanceConstraintEncoder(model, x, f, training_Ys, delta, method, robust = robust, epsilon = epsilon).encode()
     else:
         # Check that no robust flag is set.
         if robust or (epsilon is not None):

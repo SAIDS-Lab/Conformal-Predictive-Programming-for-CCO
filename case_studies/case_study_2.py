@@ -73,11 +73,3 @@ print()
 # Save the results from the second step.
 with open("case_studies_results/results_case_study_2/results_step_2.json", "w") as file:
     json.dump(results_step_2, file)
-
-
-
-
-
-
-
-

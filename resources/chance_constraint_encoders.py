@@ -16,7 +16,7 @@ class ChanceConstraintEncoder:
     """
     Encoding the chance constraint.
     """
-    def __init__(self, model, x, f, training_ys, delta, method, omega = None, robust = False, epsilon = None):
+    def __init__(self, model, x, f, training_ys, delta, method, robust = False, epsilon = None):
         """
         Initialize the encoder.
 
@@ -25,28 +25,21 @@ class ChanceConstraintEncoder:
         :param f: the function corresponding to the chance constraint, should be upper bounded by 0 (or mu in the case of JCCO).
         :param training_ys: the training data Y^{(1)}, ..., Y^{(K)}.
         :param delta: the expected miscoverage rate.
-        :param method: the encoding method. Choices include "SA", "SAA", "CPP-KKT", and "CPP-MIP".
-        :param omega: the omega parameter for SAA.
+        :param method: the encoding method. Choices include "SA", "CPP-KKT", "CPP-MIP", and "CPP-Discard".
         :param robust: whether the chance constraint encoding is robust.
         :param epsilon: distribution shift to be handled by the robust encoding (in KL divergence).
         """
         # Initialize fields.
-        self.model, self.x, self.f, self.training_ys, self.delta, self.method, self.omega = model, x, f, training_ys, delta, method, omega
+        self.model, self.x, self.f, self.training_ys, self.delta, self.method = model, x, f, training_ys, delta, method
         self.robust, self.epsilon = robust, epsilon
         self.K = len(self.training_ys)
         # Check if the method selected is correct.
-        if method not in ["SA", "SAA", "CPP-KKT", "CPP-MIP", "CPP-Discard"]:
+        if method not in ["SA", "CPP-KKT", "CPP-MIP", "CPP-Discard"]:
             raise Exception("The given encoding method is not supported.")
-        # Check for omega.
-        if self.method == "SAA":
-            if self.omega is None:
-                raise Exception("The omega parameter is not set for SAA.")
-            if self.omega <= 0 or self.omega >= 1:
-                raise Exception("The omega parameter should be in the range (0, 1).")
         # Check for robust.
         if self.robust:
-            if method == "SAA" or method == "SA":
-                raise Exception("Robust encoding is not supported for SAA and SA.")
+            if method == "SA":
+                raise Exception("Robust encoding is not supported for SA.")
             if self.epsilon is None:
                 raise Exception("The epsilon parameter is not set for robust chance constraint encoding.")
             if self.epsilon <= 0:
@@ -59,8 +52,6 @@ class ChanceConstraintEncoder:
         # Add the encoded constraint.
         if self.method == "SA" or self.method == "CPP-Discard":
             self.__encode_with_sa()
-        elif self.method == "SAA":
-            self.__encode_with_saa()
         elif self.method == "CPP-KKT":
             self.__encode_with_cpp_kkt()
         else:
@@ -72,24 +63,6 @@ class ChanceConstraintEncoder:
         """
         for i in range(len(self.training_ys)):
             self.model.addCons(self.f(self.x, self.training_ys[i]) <= 0)
-
-
-
-
-
-    def __encode_with_saa(self):
-        """
-        Encode the chance constraint via SAA.
-        """
-        # Initialize binary variables.
-        zs = {}
-        for i in range(self.K):
-            zs[i] = self.model.addVar(vtype="B", name="zs(%s)" % (i))
-        # Add constraints.
-        for i in range(self.K):
-            self.model.addCons(self.f(self.x, self.training_ys[i]) <= config.M * (1 - zs[i]))
-            self.model.addCons(self.f(self.x, self.training_ys[i]) >= config.zeta + (config.m - config.zeta) * zs[i])
-        self.model.addCons(quicksum(zs[i] for i in range(self.K)) >= self.K * (1 - self.omega))
 
     def __encode_with_cpp_kkt(self):
         """
