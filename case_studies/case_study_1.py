@@ -23,23 +23,8 @@ def generate_random_noise_matrix():
     Generate a random noise matrix.
     :return: a random noise matrix.
     """
-    # return random.uniform(15, 25)    # 0.013 17.1  19.8  (300)
-    # return np.random.laplace(50, 1)    # 0.001 0.2 0.13 (30)
-
-    # return random.uniform(0, 1)    # 0.008 5.5 3.9 (30)
     return random.uniform(15, 16)    # 0.013 30 21 (30)
-    # return random.uniform(15, 20)   # 0.02 27 43 (30)     0.02 31  46 (30)
-    # return random.uniform(15, 30)  # 0.017 22.73 12.99 (30)
-
-    # return np.random.laplace(20, 1)   # 0.29 11 19  (30)
-    # return np.random.laplace(20, 2.5)   # 0.28 10 11  (30)
-
-    # return np.random.laplace(50, 1)    # 0.001 0.2 0.13 (30)
-    # return np.random.laplace(50, 2.5)    # 0.005 0.25 0.14 (30)
-    # return np.random.laplace(50, 5)    # 0.04 0.44 0.17 (30)
-    
-    
-    
+     
 
 def f(x, Y):
     """
@@ -106,13 +91,6 @@ print()
 # Save the results for the first step of the experiment.
 with open("case_studies_results/results_case_study_1/results_step_1.json", "w") as file:
     json.dump(results_step_1, file)
-
-# with open("case_studies_results/results_case_study_1/time_test.json", "w") as file:
-#     json.dump(results_step_1, file)
-# print("K = ", hyperparameters["K"])
-# print("Discard average time:", sum(results_step_1["CPP-Discard_c"]["solver_times"]) / len(results_step_1["CPP-Discard_c"]["solver_times"]))
-# print("KKT average time:", sum(results_step_1["CPP-KKT_c"]["solver_times"]) / len(results_step_1["CPP-KKT_c"]["solver_times"]))
-# print("MIP average time:", sum(results_step_1["CPP-MIP_c"]["solver_times"]) / len(results_step_1["CPP-MIP_c"]["solver_times"]))
 
 
 # Run the second step of the experiment.

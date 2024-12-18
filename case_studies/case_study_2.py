@@ -49,19 +49,13 @@ print()
 print("Evaluating with nonconvex-SA:")
 results_step_1["SA"] = run_experiment_step_1("marginal", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "SA", hyperparameters["delta"], hyperparameters["beta"], generate_random_noise, generate_random_noise, hs, gs, 1, f, J, f_value, J_value)
 print()
-print("Evaluating with nonconvex-SA support:")
-results_step_1["SA"] = compute_delta(results_step_1["SA"], results_step_1["SA"]["final_train_Ys"], hs, gs, 1, f, J, hyperparameters["beta"], hyperparameters["K"])
-print()
+
 
 # Save the results from the first step.
 print("Saving the results from the first step.")
 with open("case_studies_results/results_case_study_2/results_step_1.json", "w") as file:
     json.dump(results_step_1, file)
 print()
-
-print("KKT average time:", sum(results_step_1["CPP-KKT_c"]["solver_times"]) / len(results_step_1["CPP-KKT_c"]["solver_times"]))
-print("MIP average time:", sum(results_step_1["CPP-MIP_c"]["solver_times"]) / len(results_step_1["CPP-MIP_c"]["solver_times"]))
-print("SA average time:", sum(results_step_1["SA"]["solver_times"]) / len(results_step_1["SA"]["solver_times"]))
 
 
 
@@ -72,10 +66,14 @@ print("Performing the second step of the experiment with the specified calibrati
 results_step_2 = dict()
 results_step_2["CPP-KKT"] = run_experiment_step_2(results_step_1["CPP-KKT_m"], results_step_1["CPP-KKT_c"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_random_noise, f_value)
 results_step_2["CPP-MIP"] = run_experiment_step_2(results_step_1["CPP-MIP_m"], results_step_1["CPP-MIP_c"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_random_noise, f_value)
+print("Evaluating with nonconvex-SA delta:")
+results_step_2["SA"] = compute_delta(results_step_1["SA"], results_step_1["SA"]["final_train_Ys"], hs, gs, 1, f, J, hyperparameters["beta"], hyperparameters["K"])
+print()
 
 # Save the results from the second step.
 with open("case_studies_results/results_case_study_2/results_step_2.json", "w") as file:
     json.dump(results_step_2, file)
+
 
 
 

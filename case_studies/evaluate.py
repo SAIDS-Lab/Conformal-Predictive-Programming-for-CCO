@@ -280,8 +280,8 @@ def compute_delta(statistics, training_ys, hs, gs, x_dim, f, J, beta, K):
     sup_comp_time = []
     delta1_comp_time = []
     delta2_comp_time = []
-    delta_nonconvexsa_1 = []
-    delta_nonconvexsa_2 = []
+    delta_star_sa_1 = []
+    delta_star_sa_2 = []
     for i in range(len(statistics["optimal_solutions"])):
         print("Computing support with n = " + str(i + 1))
         x_opt = statistics["optimal_solutions"][i]
@@ -293,24 +293,23 @@ def compute_delta(statistics, training_ys, hs, gs, x_dim, f, J, beta, K):
             training_ys_prime = [item for idx, item in enumerate(training_ys[i]) if (idx not in indices_to_remove) and (idx != j)]
             delta = 0.1 # this is a useless parameter in the following function
             x_opt_new, _ = solve(x_dim, delta, training_ys_prime, hs, gs, f, J, "SA", omega = None, robust = False, epsilon = None, joint_method = None)
-            if x_opt == x_opt_new: # I do not consider the different cases of x_dim here.
+            if x_opt == x_opt_new: #I do not consider the different cases of x_dim here.
                 indices_to_remove.append(j)
         sup.append([item for idx, item in enumerate(training_ys[i]) if idx not in indices_to_remove])
         s_K_star = len(sup[i])
         time_end = time.time()
         sup_comp_time.append(time_end - time_start)
 
-        # Compute epsilon_1.
+        # Compute delta_1.
         time_start = time.time()
         if s_K_star == K:
-            delta_nonconvexsa_1.append(1)
+            delta_star_sa_1.append(1)
         else:
-            delta_nonconvexsa_1.append(1 - (beta/(K*math.comb(K, s_K_star)))**(1 / (K - s_K_star)))
-        # print("epsilon_1:", delta_nonconvexsa_1[i])
+            delta_star_sa_1.append(1 - (beta/(K*math.comb(K, s_K_star)))**(1 / (K - s_K_star)))
         time_end = time.time()
         delta1_comp_time.append(time_end - time_start)
 
-        # Compute epsilon_2.
+        # Compute delta_2.
         time_start = time.time()
         coefficients = []
         for m in range(s_K_star, K): 
@@ -321,10 +320,9 @@ def compute_delta(statistics, training_ys, hs, gs, x_dim, f, J, beta, K):
         real_roots = roots[np.isclose(roots.imag, 0)].real 
         real_roots_in_interval = real_roots[(real_roots > 0) & (real_roots < 1)]  # as described in the paper, they would have and only have one real root in (0,1)
         if s_K_star == K:
-            delta_nonconvexsa_2.append(1)
+            delta_star_sa_2.append(1)
         else:
-            delta_nonconvexsa_2.append(1 - real_roots_in_interval[0])
-        # print("epsilon_2:", delta_nonconvexsa_2[i])
+            delta_star_sa_2.append(1 - real_roots_in_interval[0])
         time_end = time.time()
         delta2_comp_time.append(time_end - time_start)
 
@@ -333,7 +331,7 @@ def compute_delta(statistics, training_ys, hs, gs, x_dim, f, J, beta, K):
     statistics["sup_comp_time"] = sup_comp_time
     statistics["delta1_comp_time"] = delta1_comp_time
     statistics["delta2_comp_time"] = delta2_comp_time
-    statistics["epsilon_1"] = delta_nonconvexsa_1
-    statistics["epsilon_2"] = delta_nonconvexsa_2
+    statistics["delta_star_1"] = delta_star_sa_1
+    statistics["delta_star_2"] = delta_star_sa_2
 
     return statistics

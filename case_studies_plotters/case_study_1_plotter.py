@@ -37,8 +37,6 @@ def main():
     print("(conditional) Num infeasible in mip:", results_step_1["CPP-MIP_c"]["num_infeasible"])
     print("(conditional) Num infeasible in discarding:", results_step_1["CPP-Discard_c"]["num_infeasible"])
 
-
-
     
     results_plot_bilevel = [results_step_2["CPP-KKT"]["Cs_m"], results_step_1["CPP-KKT_m"]["optimal_values"], results_step_2["CPP-KKT"]["CEC_c"], results_step_2["CPP-KKT"]["Cs_c"], results_step_1["CPP-KKT_c"]["optimal_values"], results_step_2["CPP-KKT"]["CEC_0_l_z"]]
     results_plot_mip = [results_step_2["CPP-MIP"]["Cs_m"], results_step_1["CPP-MIP_m"]["optimal_values"], results_step_2["CPP-MIP"]["CEC_c"], results_step_2["CPP-MIP"]["Cs_c"], results_step_1["CPP-MIP_c"]["optimal_values"], results_step_2["CPP-MIP"]["CEC_0_l_z"]]
@@ -77,7 +75,6 @@ def main():
         ax[i].tick_params("x", labelsize=label_size)
         ax[i].tick_params("y", labelsize=label_size)
         ax[i].set_ylim(0, 100)
-        # ax[i].set_ylabel("Frequency", fontsize = font_size)
 
     ax[0].xaxis.set_major_locator(MaxNLocator(nbins=5))
     ax[1].xaxis.set_major_locator(MaxNLocator(nbins=5))
@@ -94,7 +91,6 @@ def main():
     ax[5].set_title("(f) $CEC_{0, l', z}$", fontsize = title_size, y=title_position)
 
     fig.tight_layout(rect=[0, 0, 1, 1])
-    # plt.subplots_adjust(hspace=0.25)
     plt.savefig("case_studies_plots/case_study_1_figure.pdf")
 
     print(f"Average solving time for CPP-KKT (conditional): {np.mean(results_step_1['CPP-KKT_c']['solver_times'])}")
