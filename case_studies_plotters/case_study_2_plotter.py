@@ -121,9 +121,10 @@ def main():
     plt.tick_params("x", labelsize=label_size)
     plt.tick_params("y", labelsize=label_size)
 
-    # Here, I set the xlim since there is one outlier with delta_star being 0.8xx, which is caused by the numerical issue. 
+    # Here, I set the xlim since there is one outlier with delta_star being 0.961, which is caused by the numerical issue. 
     plt.xlim(0, 0.25)
-    plt.title("$\delta^*$", fontsize = title_size, y=title_position)
+    plt.ylabel("Frequency", fontsize = font_size)
+    plt.title("$\delta^*$", fontsize = font_size, y=title_position)
     fig.tight_layout()
     plt.savefig("case_studies_plots/case_study_2_figure_delta.pdf")
 
