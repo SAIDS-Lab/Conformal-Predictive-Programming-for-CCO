@@ -156,7 +156,7 @@ def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_
     return statistics
 
 
-def run_experiment_step_2(statistics_m, L, Z, W, beta, test_noise_generator, f_value, robust = False, epsilon = None, joint_method = None, statistics_c = None):
+def run_experiment_step_2(statistics_m, L, Z, W, beta, test_noise_generator, f_value, robust = False, epsilon = None, joint_method = None, statistics_c = None, mondrian = False, is_mondrian_test_group = None):
     """
     Run the second step of the experiment.
     :param statistics_m: the marginal statistics from the first step of the experiment.
@@ -170,6 +170,8 @@ def run_experiment_step_2(statistics_m, L, Z, W, beta, test_noise_generator, f_v
     :param robust: the robustness flag.
     :param epsilon: the distribution shift to be handled by the robust encoding (in KL divergence).
     :param joint_method: the joint method or not.
+    :param mondrian: whether the Mondrian method is used.
+    :param is_mondrian_test_group: a function that detects if the test data is in the Mondrian test group. 
     :return: the statistics as the results of the experiment.
     """
 
@@ -181,42 +183,95 @@ def run_experiment_step_2(statistics_m, L, Z, W, beta, test_noise_generator, f_v
         if joint_method is None:
             raise Exception("The joint method is not set for JCCO.")
     
+    # Check for mondrian.
+    if mondrian:
+        if is_mondrian_test_group is None:
+            raise Exception("The Mondrian test group function is not set.")
+        if robust or joint_method is not None:
+            raise Exception("Mondrian is not supported for robust or joint encoding.")
+    
     # Check statistics_c is included.
-    if robust is not None and joint_method is not None:
+    if not robust and joint_method is None and not mondrian:
         if statistics_c is None:
             raise Exception("The conditional statistics are not included.")
             
 
     ################# marginal evaluation #################
     step_2_statistics = dict()
-    Cs_m = []
-    EC_count = 0
-    for i in range(len(statistics_m["optimal_solutions"])):
-        # Compute the calibration data.
-        x_opt = statistics_m["optimal_solutions"][i]
-        calibration_Ys = statistics_m["final_calib_Ys"][i]
-        if callable(f_value):
-            calibration_fs = [f_value(x_opt, Y) for Y in calibration_Ys]
-            calibration_fs.sort()
-            if robust:
-                delta_tilde = calculate_delta_tilde(statistics_m["delta"], L, phi, epsilon)
-                p_m = int(np.ceil(L * (1 - delta_tilde)))
-            else:
-                p_m = int(np.ceil((L + 1) * (1 - statistics_m["delta"])))
-            c_m = calibration_fs[p_m - 1]
-        # To Nick: Please add the uncallable case here.
-        Cs_m.append(c_m)
-        # Check posterior feasibility.
-        # EC
-        if callable(f_value):
-            Y = statistics_m["final_test_Ys"][i][0] # pick the first data as the test data in the EC
-            if f_value(x_opt, Y) <= Cs_m[i]:
-                EC_count += 1
+    if not mondrian:
+        Cs_m = []
+        EC_count = 0
+        for i in range(len(statistics_m["optimal_solutions"])):
+            # Compute the calibration data.
+            x_opt = statistics_m["optimal_solutions"][i]
+            calibration_Ys = statistics_m["final_calib_Ys"][i]
+            if callable(f_value):
+                calibration_fs = [f_value(x_opt, Y) for Y in calibration_Ys]
+                calibration_fs.sort()
+                if robust:
+                    delta_tilde = calculate_delta_tilde(statistics_m["delta"], L, phi, epsilon)
+                    p_m = int(np.ceil(L * (1 - delta_tilde)))
+                else:
+                    p_m = int(np.ceil((L + 1) * (1 - statistics_m["delta"])))
+                c_m = calibration_fs[p_m - 1]
+            # To Nick: Please add the uncallable case here.
+            Cs_m.append(c_m)
+            # Check posterior feasibility.
+            # EC
+            if callable(f_value):
+                Y = statistics_m["final_test_Ys"][i][0] # pick the first data as the test data in the EC
+                if f_value(x_opt, Y) <= Cs_m[i]:
+                    EC_count += 1
 
-    EC = EC_count / (len(statistics_m["optimal_solutions"]))
+        EC = EC_count / (len(statistics_m["optimal_solutions"]))
+    else:
+        Cs_m_vanilla = []
+        Cs_m_mondrian = []
+        MEC_vanilla_count = 0
+        MEC_mondrian_count = 0
+        MEC_total_count = 0
+        for i in range(len(statistics_m["optimal_solutions"])):
+            # Compute the calibration data.
+            x_opt = statistics_m["optimal_solutions"][i]
+            calibration_Ys = statistics_m["final_calib_Ys"][i]
+            # Compute for vanilla.
+            if callable(f_value):
+                calibration_vanilla_fs = [f_value(x_opt, Y) for Y in calibration_Ys]
+                calibration_vanilla_fs.sort()
+                pm_vanilla = int(np.ceil((L + 1) * (1 - statistics_m["delta"])))
+                c_m_vanilla = calibration_vanilla_fs[pm_vanilla - 1]
+            else:
+                raise Exception("The function f_value is not callable for mondrian method.")
+            Cs_m_vanilla.append(c_m_vanilla)
+            # Compute for mondrian.
+            if callable(f_value):
+                calibration_mondrian_fs = [f_value(x_opt, Y) for Y in calibration_Ys if is_mondrian_test_group(Y)]
+                calibration_mondrian_fs.sort()
+                L_mondrian = len(calibration_mondrian_fs)
+                pm_mondrian = int(np.ceil((L_mondrian + 1) * (1 - statistics_m["delta"])))
+                c_m_mondrian = calibration_mondrian_fs[pm_mondrian - 1]
+            else:
+                raise Exception("The function f_value is not callable for mondrian method.")
+            Cs_m_mondrian.append(c_m_mondrian)
+            # Check posterior feasibility.
+            # MEC
+            if callable(f_value):
+                Y = statistics_m["final_test_Ys"][i][0]
+                # filter for mondrian.
+                if is_mondrian_test_group(Y):
+                    MEC_total_count += 1
+                    if f_value(x_opt, Y) <= c_m_vanilla:
+                        MEC_vanilla_count += 1
+                    if f_value(x_opt, Y) <= c_m_mondrian:
+                        MEC_mondrian_count += 1
+            else:
+                raise Exception("The function f_value is not callable for mondrian method.")
+        MEC_vanilla = MEC_vanilla_count / MEC_total_count
+        MEC_mondrian = MEC_mondrian_count / MEC_total_count
+
 
     ################# conditional evaluation #################
-    if not robust and not joint_method:
+    if not robust and joint_method is None and not mondrian:
         Cs_c = []
         CEC_c = []
         delta_star = []
@@ -256,13 +311,19 @@ def run_experiment_step_2(statistics_m, L, Z, W, beta, test_noise_generator, f_v
     step_2_statistics["V"] = statistics_m["V"]
     step_2_statistics["Z"] = Z
     step_2_statistics["W"] = W
-    step_2_statistics["Cs_m"] = Cs_m
-    step_2_statistics["Cs_c"] = Cs_c
-    step_2_statistics["EC"] = EC
+    if not mondrian:
+        step_2_statistics["Cs_m"] = Cs_m
+        step_2_statistics["EC"] = EC
+    else:
+        step_2_statistics["Cs_m_vanilla"] = Cs_m_vanilla
+        step_2_statistics["Cs_m_mondrian"] = Cs_m_mondrian
+        step_2_statistics["MEC_vanilla"] = MEC_vanilla
+        step_2_statistics["MEC_mondrian"] = MEC_mondrian
     if robust:
         step_2_statistics["delta_tilde"] = delta_tilde
         step_2_statistics["epsilon"] = epsilon
-    if not robust and not joint_method:
+    if not robust and not joint_method and not mondrian:
+        step_2_statistics["Cs_c"] = Cs_c
         step_2_statistics["CEC_c"] = CEC_c
         step_2_statistics["CEC_0_l_z"] = CEC_0_l_z
         step_2_statistics["delta_star"] = delta_star

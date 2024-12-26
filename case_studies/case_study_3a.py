@@ -1,5 +1,5 @@
 """
-In this file, we implement the optimal control problem (case 2 from the paper).
+In this file, we implement the optimal control problem with an emphasis on the robust evaluation.
 """
 
 # Import necessary modules.
@@ -113,12 +113,12 @@ with open("case_studies_results/results_case_study_3/results_baseline_step_1.jso
 # Run the second step of the experiment.
 print("Performing the second step of the experiment with the specified calibration parameters.")
 results_step_2 = dict()
-results_step_2["CPP-MIP"] = run_experiment_step_2(results_step_1["CPP-MIP"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_testing_random_noise, f_value, statistics_c=results_step_1["CPP-MIP"])
+results_step_2["CPP-MIP"] = run_experiment_step_2(results_step_1["CPP-MIP"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_testing_random_noise, f_value, robust = True, epsilon = found_epsilon)
 results_baseline_step_2 = dict()
-results_baseline_step_2["CPP-MIP"] = run_experiment_step_2(results_baseline_step_1["CPP-MIP"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_testing_random_noise, f_value, statistics_c=results_baseline_step_1["CPP-MIP"])
+results_baseline_step_2["CPP-MIP"] = run_experiment_step_2(results_baseline_step_1["CPP-MIP"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_testing_random_noise, f_value, robust = False, epsilon = None)
 
 # Save the results from the second step.
-with open("case_studies_results/results_case_study_3/results_step_2.json", "w") as file:
+with open("case_studies_results/results_case_study_3/results_step_2_robust.json", "w") as file:
     json.dump(results_step_2, file)
 with open("case_studies_results/results_case_study_3/results_baseline_step_2.json", "w") as file:
     json.dump(results_baseline_step_2, file)
