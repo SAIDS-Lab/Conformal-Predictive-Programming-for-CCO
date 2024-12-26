@@ -99,13 +99,13 @@ results_baseline_step_1["CPP-MIP"] = run_experiment_step_1("marginal", hyperpara
 print()
 
 # Save the results for the first step of the experiment.
-with open("case_studies_results/results_case_study_3/results_step_1.json", "w") as file:
+with open("case_studies_results/results_case_study_3/results_step_1_robust.json", "w") as file:
     json.dump(results_step_1, file)
 with open("case_studies_results/results_case_study_3/results_baseline_step_1.json", "w") as file:
     json.dump(results_baseline_step_1, file)
 
 # Run the second step of the experiment.
-with open("case_studies_results/results_case_study_3/results_step_1.json", "r") as file:
+with open("case_studies_results/results_case_study_3/results_step_1_robust.json", "r") as file:
     results_step_1 = json.load(file)
 with open("case_studies_results/results_case_study_3/results_baseline_step_1.json", "r") as file:
     results_baseline_step_1 = json.load(file)

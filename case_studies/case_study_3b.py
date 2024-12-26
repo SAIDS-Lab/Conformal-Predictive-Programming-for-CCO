@@ -67,8 +67,17 @@ def J(u):
 def J_value(u):
     return sum(u[t][0] * u[t][0] + u[t][1] * u[t][1] for t in range(T))
 
-# The first step is no different from that from case study 3a. Simply load the results.
-with open("case_studies_results/results_case_study_3/results_step_1.json", "r") as file:
+print("Evaluating with CPP-MIP:")
+results_step_1 = dict()
+results_step_1["CPP-MIP"] = run_experiment_step_1("marginal", hyperparameters["N"], hyperparameters["K"], hyperparameters["L"], hyperparameters["V"], "CPP-MIP", hyperparameters["delta"], hyperparameters["beta"], generate_training_random_noise, generate_testing_random_noise, hs, gs, (T, 2), f, J, f_value, J_value)
+print()
+
+# Save the results from the first step.
+with open("case_studies_results/results_case_study_3/results_step_1_mondrian.json", "w") as file:
+    json.dump(results_step_1, file)
+
+# Load the results from the first step.
+with open("case_studies_results/results_case_study_3/results_step_1_mondrian.json", "r") as file:
     results_step_1 = json.load(file)
 
 # Write the function for is_mondrian_test_group.

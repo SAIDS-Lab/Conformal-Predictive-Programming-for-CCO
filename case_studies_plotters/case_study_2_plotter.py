@@ -1,5 +1,5 @@
 """
-In this file, we plot the results for case study 1.
+In this file, we plot the results for case study 2.
 """
 
 import json
