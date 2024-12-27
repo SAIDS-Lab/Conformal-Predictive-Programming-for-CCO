@@ -20,6 +20,25 @@ import time
 # Hyperparameter setting:
 np.random.seed(config_seed)
 
+def solve_auxiliary_c_union(x_opt, calibration_Ys, f_value):
+    """
+    Solve for the margin of error for the union method in JCCO.
+    :param x_opt: the optimal solution.
+    :param calibration_Ys: the calibration data.
+    :param f_value: the functions that return the values of the chance constraint.
+    """
+    auxiliary_model = Model("model")
+    s = len(f_value)
+    # Add the epigraph variable.
+    t = auxiliary_model.addVar(lb=None, ub=None, vtype="C", name="t")
+    # Add the delta_prime variables.
+    delta_prime = {}
+    for j in range(s):
+        delta_prime[j] = auxiliary_model.addVar(lb=0, ub=1, vtype="C", name="delta_prime(%s)" % (j))
+    # Will keep working from here.
+    pass
+
+
 
 def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_generator, test_noise_generator, hs, gs, x_dim, f, J, f_value, J_value, robust = False, epsilon = None, joint_method = None):
     """
@@ -43,7 +62,7 @@ def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_
     :param J_value: the cost function (that returns the value), should be a function of x only.
     :param robust: true or false for robust vs. not robust.
     :param epsilon: the distribution shift to be handled by the robust encoding (in total variation distance).
-    :param joint_method: if the joint method is used or not.
+    :param joint_method: if the joint method is used or not. Options are None, "union", "max".
     :return: the statistics as the results of the experiment.
     """
     statistics = dict()
@@ -79,8 +98,12 @@ def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_
         # Check that no robust flag is set.
         if robust or (epsilon is not None):
             raise Exception("Robust encoding is not supported for JCCO.")
+        if method == "CPP-Discard":
+            raise Exception("The method CPP-Discard is not supported for JCCO.")
         if joint_method is None:
             raise Exception("The joint method is not set for JCCO.")
+        elif joint_method not in ["union", "max"]:
+            raise Exception("The joint method is not recognized.")
     
 
     # Record the statistics.
@@ -169,7 +192,7 @@ def run_experiment_step_2(statistics_m, L, Z, W, beta, test_noise_generator, f_v
     :param f_value: the chance constraint function (that returns the value), should be a function of x and Y.  Alternatively, this can be a list of functions in the case of JCCO (Note this requires that the function constraints satisfy simultaneously).
     :param robust: the robustness flag.
     :param epsilon: the distribution shift to be handled by the robust encoding (in KL divergence).
-    :param joint_method: the joint method or not.
+    :param joint_method: if the joint method is used or not. Options are None, "union", "max".
     :param mondrian: whether the Mondrian method is used.
     :param is_mondrian_test_group: a function that detects if the test data is in the Mondrian test group. 
     :return: the statistics as the results of the experiment.
@@ -182,6 +205,8 @@ def run_experiment_step_2(statistics_m, L, Z, W, beta, test_noise_generator, f_v
             raise Exception("Robust encoding is not supported for JCCO.")
         if joint_method is None:
             raise Exception("The joint method is not set for JCCO.")
+        if joint_method not in ["union", "max"]:
+            raise Exception("The joint method is not recognized.")
     
     # Check for mondrian.
     if mondrian:
@@ -214,7 +239,14 @@ def run_experiment_step_2(statistics_m, L, Z, W, beta, test_noise_generator, f_v
                 else:
                     p_m = int(np.ceil((L + 1) * (1 - statistics_m["delta"])))
                 c_m = calibration_fs[p_m - 1]
-            # To Nick: Please add the uncallable case here.
+            elif joint_method == "union":
+                # Solve an auxiliary optimization problem.
+                c_m = solve_auxiliary_c_union(x_opt, calibration_Ys, f_value)
+            else:
+                calibration_fs = [max([f_value[j](x_opt, Y) for j in range(len(f_value))]) for Y in calibration_Ys]
+                calibration_fs.sort()
+                p = int(np.ceil((L + 1) * (1 - statistics_m["delta"])))
+                c_m = calibration_fs[p - 1]
             Cs_m.append(c_m)
             # Check posterior feasibility.
             # EC

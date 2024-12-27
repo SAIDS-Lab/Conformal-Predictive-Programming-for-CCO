@@ -160,9 +160,9 @@ class JointChanceConstraintEncoder:
         self.model, self.x, self.fs, self.training_ys, self.delta, self.joint_method, self.kernel_method = model, x, fs, training_ys, delta, joint_method, kernel_method
         self.K = len(self.training_ys)
         # Check the presence of a valid method combination.
-        if joint_method not in ["Union", "Max"]:
+        if joint_method not in ["union", "max"]:
             raise Exception("The given JCCO method is not supported.")
-        if kernel_method not in ["CPP-KKT", "CPP-MIP", "CPP-Discard"]:
+        if kernel_method not in ["CPP-KKT", "CPP-MIP"]:
             raise Exception("The given encoding method is not supported.")
 
     def encode(self):
@@ -170,7 +170,7 @@ class JointChanceConstraintEncoder:
         Performs encoding on the joint chance constraint.
         """
         # Add the encoded constraint.
-        if self.joint_method == "Union":
+        if self.joint_method == "union":
             self.__encode_for_union()
         else:
             self.__encode_for_max()
