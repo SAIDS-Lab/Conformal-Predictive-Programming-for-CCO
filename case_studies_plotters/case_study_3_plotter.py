@@ -56,11 +56,11 @@ def main():
     print("Mondrian MEC:", MEC_mondrian)
 
     # Set up the 3 plots.
-    fig, ax = plt.subplots(1, 3, figsize=(22, 4))
+    fig, ax = plt.subplots(1, 3, figsize=(22, 6))
     ax = ax.flatten()
     # Plot Cs.
-    robust_Cs = results_step_2_robust["CPP-MIP"]["Cs"]
-    baseline_Cs = results_baseline_step_2["CPP-MIP"]["Cs"]
+    robust_Cs = results_step_2_robust["CPP-MIP"]["Cs_m"]
+    baseline_Cs = results_baseline_step_2["CPP-MIP"]["Cs_m"]
     min_value = min(min(robust_Cs), min(baseline_Cs))
     max_value = max(max(robust_Cs), max(baseline_Cs))
     y_1, x_1 = np.histogram(robust_Cs, bins=np.arange(min_value, max_value + (max_value - min_value) / num_bins, (max_value - min_value) / num_bins))

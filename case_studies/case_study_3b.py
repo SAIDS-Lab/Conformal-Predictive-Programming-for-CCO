@@ -20,7 +20,7 @@ random.seed(config.config_seed)
 T = 5
 z = (5, 5)
 zeta = 1
-hyperparameters = {"N": 200, "K": 80, "L": 200, "V": 1000, "delta": 0.2}
+hyperparameters = {"N": 200, "K": 80, "L": 200, "V": 1000, "delta": 0.2, "beta": None}
 
 
 mean = 0

@@ -20,24 +20,52 @@ import time
 # Hyperparameter setting:
 np.random.seed(config_seed)
 
-def solve_auxiliary_c_union(x_opt, calibration_Ys, f_value):
+def solve_auxiliary_c_union(x_opt, calibration_Ys, f_value, delta):
     """
     Solve for the margin of error for the union method in JCCO.
     :param x_opt: the optimal solution.
     :param calibration_Ys: the calibration data.
     :param f_value: the functions that return the values of the chance constraint.
+    :param delta: the expected miscoverage rate.
+    :return: the margin of error.
     """
     auxiliary_model = Model("model")
     s = len(f_value)
+    L = len(calibration_Ys)
     # Add the epigraph variable.
     t = auxiliary_model.addVar(lb=None, ub=None, vtype="C", name="t")
     # Add the delta_prime variables.
     delta_prime = {}
     for j in range(s):
         delta_prime[j] = auxiliary_model.addVar(lb=0, ub=1, vtype="C", name="delta_prime(%s)" % (j))
-    # Will keep working from here.
-    pass
-
+    # Add integer variables.
+    z = {}
+    for i in range(len(calibration_Ys)):
+        for j in range(s):
+            z[i, j] = auxiliary_model.addVar(vtype="B", name="z(%s, %s)" % (i, j))
+    # Add the constraints.
+    for i in range(len(calibration_Ys)):
+        for j in range(s):
+            auxiliary_model.addCons(f_value[j](x_opt, calibration_Ys[i]) - t <= config.M * (1 - z[i, j]))
+            auxiliary_model.addCons(f_value[j](x_opt, calibration_Ys[i]) - t >= config.zeta + (config.m - config.zeta) * z[i, j])
+    for j in range(s):
+        summation = 0
+        for i in range(len(calibration_Ys)):
+            summation += z[i, j]
+        auxiliary_model.addCons(summation >= (L + 1) * (1 - delta_prime[j]))
+    summation_delta = 0
+    for j in range(s):
+        summation_delta += delta_prime[j]
+    auxiliary_model.addCons(summation_delta <= delta)
+    # Solve the model.
+    auxiliary_model.setObjective(t, "minimize")
+    auxiliary_model.hideOutput()
+    auxiliary_model.optimize()
+    if auxiliary_model.getStatus() == "optimal":
+        sol = auxiliary_model.getBestSol()
+        return sol[t]
+    else:
+        raise Exception("Error: Error in auxiliary optimization occured.")
 
 
 def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_generator, test_noise_generator, hs, gs, x_dim, f, J, f_value, J_value, robust = False, epsilon = None, joint_method = None):
@@ -254,7 +282,10 @@ def run_experiment_step_2(statistics_m, L, Z, W, beta, test_noise_generator, f_v
                 Y = statistics_m["final_test_Ys"][i][0] # pick the first data as the test data in the EC
                 if f_value(x_opt, Y) <= Cs_m[i]:
                     EC_count += 1
-
+            else:
+                Y = statistics_m["final_test_Ys"][i][0] # pick the first data as the test data in the EC
+                if max([f_value[j](x_opt, Y) for j in range(len(f_value))]) <= Cs_m[i]:
+                    EC_count += 1
         EC = EC_count / (len(statistics_m["optimal_solutions"]))
     else:
         Cs_m_vanilla = []
