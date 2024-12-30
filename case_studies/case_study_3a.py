@@ -44,7 +44,7 @@ def f(u, Y):
         y_new = A @ ys[-1] + B @ np.array([u[t, 0], u[t, 1]]) + Y[t]
         ys.append(y_new)
     yT = ys[-1]
-    return ((yT[0] - z[0]) * (yT[0] - z[0]) + (yT[2] - z[1]) * (yT[2] - z[1])) ** 2 - 3((yT[0] - z[0]) ** 2) * ((yT[2] - z[1]) ** 2) - zeta
+    return ((yT[0] - z[0]) * (yT[0] - z[0]) + (yT[2] - z[1]) * (yT[2] - z[1])) ** 2 - 3 * ((yT[0] - z[0]) ** 2) * ((yT[2] - z[1]) ** 2) - zeta
 
 
 def f_value(u, Y):
@@ -56,7 +56,7 @@ def f_value(u, Y):
         y_new = A @ ys[-1] + B @ np.array([u[t][0], u[t][1]]) + Y[t]
         ys.append(y_new)
     yT = ys[-1]
-    return ((yT[0] - z[0]) * (yT[0] - z[0]) + (yT[2] - z[1]) * (yT[2] - z[1])) ** 2 - 3((yT[0] - z[0]) ** 2) * ((yT[2] - z[1]) ** 2) - zeta
+    return ((yT[0] - z[0]) * (yT[0] - z[0]) + (yT[2] - z[1]) * (yT[2] - z[1])) ** 2 - 3 * ((yT[0] - z[0]) ** 2) * ((yT[2] - z[1]) ** 2) - zeta
 
 gs = []
 hs = []
