@@ -411,7 +411,7 @@ def compute_delta(statistics, training_ys, hs, gs, x_dim, f, J, beta, K):
         for j in range(len(training_ys[i])):
             training_ys_prime = [item for idx, item in enumerate(training_ys[i]) if (idx not in indices_to_remove) and (idx != j)]
             delta = 0.1 # this is a useless parameter in the following function
-            x_opt_new, _ = solve(x_dim, delta, training_ys_prime, hs, gs, f, J, "SA", omega = None, robust = False, epsilon = None, joint_method = None)
+            x_opt_new, _ = solve(x_dim, delta, training_ys_prime, hs, gs, f, J, "SA", robust = False, epsilon = None, joint_method = None)
             if x_opt == x_opt_new: #I do not consider the different cases of x_dim here.
                 indices_to_remove.append(j)
         sup.append([item for idx, item in enumerate(training_ys[i]) if idx not in indices_to_remove])
