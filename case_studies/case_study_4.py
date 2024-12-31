@@ -39,6 +39,7 @@ f = [f0, f1, f2]
 def J(x):
     c = np.array([1, 1, 1])
     J = sum(c[i]*x[i] for i in range(N_cons))
+    return J
 
 hs = [lambda x: 0 - x[0], lambda x: 0 - x[1], lambda x: 0 - x[2]]
 gs = []
