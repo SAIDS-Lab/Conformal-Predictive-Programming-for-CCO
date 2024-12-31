@@ -20,17 +20,17 @@ random.seed(config.config_seed)
 T = 5
 z = (5, 5)
 zeta = 1
-hyperparameters = {"N": 200, "K": 80, "L": 200, "V": 1000, "delta": 0.2, "beta": None}
+hyperparameters = {"N": 200, "K": 60, "L": 200, "V": 1000, "delta": 0.1, "beta": None}
 
 
 mean = 0
-var = 0.1
+var = 0.01
 
 def generate_training_random_noise():
-    return np.random.normal(loc = mean, scale = var, size = T)
+    return np.random.normal(loc = mean, scale = var, size = (T, 4)).tolist()
 
 def generate_testing_random_noise():
-    return np.random.normal(loc = mean, scale = var, size = T)
+    return np.random.normal(loc = mean, scale = var, size = (T, 4)).tolist()
      
 
 def f(u, Y):
@@ -42,7 +42,7 @@ def f(u, Y):
         y_new = A @ ys[-1] + B @ np.array([u[t, 0], u[t, 1]]) + Y[t]
         ys.append(y_new)
     yT = ys[-1]
-    return ((yT[0] - z[0]) * (yT[0] - z[0]) + (yT[2] - z[1]) * (yT[2] - z[1])) ** 2 - 3((yT[0] - z[0]) ** 2) * ((yT[2] - z[1]) ** 2) - zeta
+    return (yT[0] - z[0]) * (yT[0] - z[0]) + (yT[2] - z[1]) * (yT[2] - z[1]) - zeta
 
 
 def f_value(u, Y):
@@ -54,7 +54,7 @@ def f_value(u, Y):
         y_new = A @ ys[-1] + B @ np.array([u[t][0], u[t][1]]) + Y[t]
         ys.append(y_new)
     yT = ys[-1]
-    return ((yT[0] - z[0]) * (yT[0] - z[0]) + (yT[2] - z[1]) * (yT[2] - z[1])) ** 2 - 3((yT[0] - z[0]) ** 2) * ((yT[2] - z[1]) ** 2) - zeta
+    return (yT[0] - z[0]) * (yT[0] - z[0]) + (yT[2] - z[1]) * (yT[2] - z[1]) - zeta
 
 gs = []
 hs = []
@@ -82,7 +82,7 @@ with open("case_studies_results/results_case_study_3/results_step_1_mondrian.jso
 
 # Write the function for is_mondrian_test_group.
 def is_mondrian_test_group_case_3(Y):
-    return np.any(abs(Y) > 0.05)
+    return np.any(abs(Y) > 0.005)
 
 # Run the second step of the experiment.
 print("Performing the second step of the experiment with the specified calibration parameters.")
