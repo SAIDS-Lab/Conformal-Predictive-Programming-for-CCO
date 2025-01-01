@@ -20,7 +20,7 @@ random.seed(config.config_seed)
 T = 5
 z = (5, 5)
 zeta = 1
-hyperparameters = {"N": 100, "K": 60, "L": 200, "V": 1000, "delta": 0.1, "beta": None}
+hyperparameters = {"N": 100, "K": 60, "L": 200, "V": 1000, "delta": 0.1, "beta": None, "Z": None, "W": None}
 
 
 mean_1 = 0
@@ -115,7 +115,7 @@ print("Performing the second step of the experiment with the specified calibrati
 results_step_2 = dict()
 results_step_2["CPP-MIP"] = run_experiment_step_2(results_step_1["CPP-MIP"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_testing_random_noise, f_value, robust = True, epsilon = found_epsilon)
 results_baseline_step_2 = dict()
-results_baseline_step_2["CPP-MIP"] = run_experiment_step_2(results_baseline_step_1["CPP-MIP"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_testing_random_noise, f_value, robust = False, epsilon = None)
+results_baseline_step_2["CPP-MIP"] = run_experiment_step_2(results_baseline_step_1["CPP-MIP"], hyperparameters["L"], hyperparameters["Z"], hyperparameters["W"], hyperparameters["beta"], generate_testing_random_noise, f_value, robust = False, epsilon = None, baseline = True)
 
 # Save the results from the second step.
 with open("case_studies_results/results_case_study_3/results_step_2_robust.json", "w") as file:

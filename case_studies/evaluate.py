@@ -207,7 +207,7 @@ def run_experiment_step_1(mode, N, K, L, V, method, delta, beta, training_noise_
     return statistics
 
 
-def run_experiment_step_2(statistics_m, L, Z, W, beta, test_noise_generator, f_value, robust = False, epsilon = None, joint_method = None, statistics_c = None, mondrian = False, is_mondrian_test_group = None):
+def run_experiment_step_2(statistics_m, L, Z, W, beta, test_noise_generator, f_value, robust = False, epsilon = None, joint_method = None, statistics_c = None, mondrian = False, is_mondrian_test_group = None, baseline = False):
     """
     Run the second step of the experiment.
     :param statistics_m: the marginal statistics from the first step of the experiment.
@@ -223,6 +223,7 @@ def run_experiment_step_2(statistics_m, L, Z, W, beta, test_noise_generator, f_v
     :param joint_method: if the joint method is used or not. Options are None, "union", "max".
     :param mondrian: whether the Mondrian method is used.
     :param is_mondrian_test_group: a function that detects if the test data is in the Mondrian test group. 
+    :param baseline: whether the baseline is used.
     :return: the statistics as the results of the experiment.
     """
 
@@ -244,7 +245,7 @@ def run_experiment_step_2(statistics_m, L, Z, W, beta, test_noise_generator, f_v
             raise Exception("Mondrian is not supported for robust or joint encoding.")
     
     # Check statistics_c is included.
-    if not robust and joint_method is None and not mondrian:
+    if not robust and joint_method is None and not mondrian and not baseline:
         if statistics_c is None:
             raise Exception("The conditional statistics are not included.")
             
@@ -269,7 +270,7 @@ def run_experiment_step_2(statistics_m, L, Z, W, beta, test_noise_generator, f_v
                 c_m = calibration_fs[p_m - 1]
             elif joint_method == "union":
                 # Solve an auxiliary optimization problem.
-                c_m = solve_auxiliary_c_union(x_opt, calibration_Ys, f_value)
+                c_m = solve_auxiliary_c_union(x_opt, calibration_Ys, f_value, statistics_m["delta"])
             else:
                 calibration_fs = [max([f_value[j](x_opt, Y) for j in range(len(f_value))]) for Y in calibration_Ys]
                 calibration_fs.sort()
@@ -334,7 +335,7 @@ def run_experiment_step_2(statistics_m, L, Z, W, beta, test_noise_generator, f_v
 
 
     ################# conditional evaluation #################
-    if not robust and joint_method is None and not mondrian:
+    if (not robust and joint_method is None and not mondrian) and (not baseline):
         Cs_c = []
         CEC_c = []
         delta_star = []
@@ -385,7 +386,7 @@ def run_experiment_step_2(statistics_m, L, Z, W, beta, test_noise_generator, f_v
     if robust:
         step_2_statistics["delta_tilde"] = delta_tilde
         step_2_statistics["epsilon"] = epsilon
-    if not robust and not joint_method and not mondrian:
+    if not robust and not joint_method and not mondrian and not baseline:
         step_2_statistics["Cs_c"] = Cs_c
         step_2_statistics["CEC_c"] = CEC_c
         step_2_statistics["CEC_0_l_z"] = CEC_0_l_z

@@ -15,10 +15,10 @@ import math
 # Experimental setting:
 np.random.seed(config.config_seed)
 random.seed(config.config_seed)
-hyperparameters = {"N": 100, "K": 80, "L": 200, "V": 1000, "delta": 0.1, "beta": None}
+hyperparameters = {"N": 100, "K": 80, "L": 200, "V": 1000, "delta": 0.1, "beta": None, "Z": None, "W": None}
 
 def generate_random_noise():
-    return np.random.lognormal(mean=0, sigma=0.5, size=3)
+    return np.random.lognormal(mean=0, sigma=0.5, size=3).tolist()
 
 A = np.array([[3, 12, 2], [10, 3, 5], [5, 3, 15]])
 N_cons = 3

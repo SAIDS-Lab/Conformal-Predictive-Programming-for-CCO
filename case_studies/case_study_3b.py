@@ -20,7 +20,7 @@ random.seed(config.config_seed)
 T = 5
 z = (5, 5)
 zeta = 1
-hyperparameters = {"N": 200, "K": 60, "L": 200, "V": 1000, "delta": 0.1, "beta": None}
+hyperparameters = {"N": 200, "K": 60, "L": 200, "V": 1000, "delta": 0.1, "beta": None, "Z": None, "W": None}
 
 
 mean = 0
@@ -82,7 +82,7 @@ with open("case_studies_results/results_case_study_3/results_step_1_mondrian.jso
 
 # Write the function for is_mondrian_test_group.
 def is_mondrian_test_group_case_3(Y):
-    return np.any(abs(Y) > 0.005)
+    return np.any([abs(value) > 0.005 for value in np.array(Y).flatten()])
 
 # Run the second step of the experiment.
 print("Performing the second step of the experiment with the specified calibration parameters.")
