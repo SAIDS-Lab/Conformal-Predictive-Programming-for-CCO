@@ -54,9 +54,9 @@ def main():
     ax[0].legend(fontsize=legend_size, loc="upper right")
     ax[0].tick_params("x", labelsize=label_size)
     ax[0].tick_params("y", labelsize=label_size)
-    ax[0].set_ylim(0, 100)
+    ax[0].set_ylim(0, 60)
     ax[0].set_ylabel("Frequency", fontsize=font_size)
-    ax[0].set_title("$\\bar{C}(x^*)$", fontsize=title_size, y=title_position)
+    ax[0].set_title("$(b) \\bar{C}(x_l^*)$", fontsize=title_size, y=title_position)
 
     # Plot J.
     union_J = results_step_1["union"]["optimal_values"]
@@ -72,8 +72,8 @@ def main():
     ax[1].legend(fontsize=legend_size, loc="upper right")
     ax[1].tick_params("x", labelsize=label_size)
     ax[1].tick_params("y", labelsize=label_size)
-    ax[1].set_ylim(0, 100)
-    ax[1].set_title("$J(x^*)$", fontsize=title_size, y=title_position)
+    ax[1].set_ylim(0, 60)
+    ax[1].set_title("$(b) J(x_l^*)$", fontsize=title_size, y=title_position)
 
     fig.tight_layout(rect=[0, 0, 1, 1])
     plt.savefig("case_studies_plots/case_study_4_figure.pdf")
