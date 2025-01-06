@@ -74,7 +74,7 @@ def main():
     ax[0].tick_params("y", labelsize=label_size)
     ax[0].set_ylim(0, 100)
     ax[0].set_ylabel("Frequency", fontsize=font_size)
-    ax[0].set_title("$\\tilde{C}(x^*)$ for RCPP and $C_m(x^*)$ for CPP", fontsize=title_size, y=title_position)
+    ax[0].set_title("(a) $\\tilde{C}(x_l^*)$ for RCPP and $C_m(x_l^*)$ for CPP", fontsize=title_size, y=title_position)
 
     # Plot J.
     robust_J = results_step_1_robust["CPP-MIP"]["optimal_values"]
@@ -91,7 +91,7 @@ def main():
     ax[1].tick_params("x", labelsize=label_size)
     ax[1].tick_params("y", labelsize=label_size)
     ax[1].set_ylim(0, 100)
-    ax[1].set_title("$J(x^*)$", fontsize=title_size, y=title_position)
+    ax[1].set_title("(b) $J(x^*)$", fontsize=title_size, y=title_position)
 
     # Plot Cs (for mondrian).
     vanilla_Cs = results_step_2_mondrian["CPP-MIP"]["Cs_m_vanilla"]
@@ -108,7 +108,7 @@ def main():
     ax[2].tick_params("x", labelsize=label_size)
     ax[2].tick_params("y", labelsize=label_size)
     ax[2].set_ylim(0, 100)
-    ax[2].set_title("$C_m(x^*)$ and $C_{G_2}$", fontsize=title_size, y=title_position)
+    ax[2].set_title("(c) $C_m(x_l^*)$ and $C_{G_2}(x_l^*)$", fontsize=title_size, y=title_position)
 
     fig.tight_layout(rect=[0, 0, 1, 1])
     plt.savefig("case_studies_plots/case_study_3_figure.pdf")
