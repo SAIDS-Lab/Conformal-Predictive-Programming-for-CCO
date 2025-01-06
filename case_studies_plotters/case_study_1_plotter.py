@@ -37,6 +37,11 @@ def main():
     print("(conditional) Num infeasible in mip:", results_step_1["CPP-MIP_c"]["num_infeasible"])
     print("(conditional) Num infeasible in discarding:", results_step_1["CPP-Discard_c"]["num_infeasible"])
 
+    # Report EC.
+    print("EC for CPP-KKT:", results_step_2["CPP-KKT"]["EC"])
+    print("EC for CPP-MIP:", results_step_2["CPP-MIP"]["EC"])
+    print("EC for CPP-Discard:", results_step_2["CPP-Discard"]["EC"])
+
     
     results_plot_bilevel = [results_step_2["CPP-KKT"]["Cs_m"], results_step_1["CPP-KKT_m"]["optimal_values"], results_step_2["CPP-KKT"]["CEC_c"], results_step_2["CPP-KKT"]["Cs_c"], results_step_1["CPP-KKT_c"]["optimal_values"], results_step_2["CPP-KKT"]["CEC_0_l_z"]]
     results_plot_mip = [results_step_2["CPP-MIP"]["Cs_m"], results_step_1["CPP-MIP_m"]["optimal_values"], results_step_2["CPP-MIP"]["CEC_c"], results_step_2["CPP-MIP"]["Cs_c"], results_step_1["CPP-MIP_c"]["optimal_values"], results_step_2["CPP-MIP"]["CEC_0_l_z"]]
@@ -83,11 +88,11 @@ def main():
     ax[0].set_ylabel("Frequency", fontsize = font_size)
     ax[3].set_ylabel("Frequency", fontsize = font_size)
 
-    ax[0].set_title("(a) $C_m(x^*_m)$", fontsize = title_size, y=title_position)
-    ax[1].set_title("(b) $J(x^*_m)$", fontsize = title_size, y=title_position)
+    ax[0].set_title("(a) $C_m(x^*_l)$", fontsize = title_size, y=title_position)
+    ax[1].set_title("(b) $J(x^*_l)$ (optimized with $\\alpha_m$)", fontsize = title_size, y=title_position)
     ax[2].set_title("(c) $CEC_{c, l}$", fontsize = title_size, y=title_position)
     ax[3].set_title("(d) $C_c(x^*_c)$", fontsize = title_size, y=title_position)
-    ax[4].set_title("(e) $J(x^*_c)$", fontsize = title_size, y=title_position)
+    ax[4].set_title("(e) $J(x^*_l)$ (optimized with $\\alpha_c$)", fontsize = title_size, y=title_position)
     ax[5].set_title("(f) $CEC_{0, l', z}$", fontsize = title_size, y=title_position)
 
     fig.tight_layout(rect=[0, 0, 1, 1])

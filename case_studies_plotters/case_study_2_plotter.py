@@ -41,6 +41,10 @@ def main():
     print(f"Average delta1 computation time for nonconvex SA: {np.mean(results_step_2['SA']['delta1_comp_time'])}")
     print(f"Average delta2 computation time for nonconvex SA: {np.mean(results_step_2['SA']['delta2_comp_time'])}")
 
+    # Report EC.
+    print("EC for CPP-KKT:", results_step_2["CPP-KKT"]["EC"])
+    print("EC for CPP-MIP:", results_step_2["CPP-MIP"]["EC"])
+
     
     results_plot_bilevel = [results_step_2["CPP-KKT"]["Cs_m"], results_step_1["CPP-KKT_m"]["optimal_values"], results_step_2["CPP-KKT"]["CEC_c"], results_step_2["CPP-KKT"]["Cs_c"], results_step_1["CPP-KKT_c"]["optimal_values"], results_step_2["CPP-KKT"]["CEC_0_l_z"]]
     results_plot_mip = [results_step_2["CPP-MIP"]["Cs_m"], results_step_1["CPP-MIP_m"]["optimal_values"], results_step_2["CPP-MIP"]["CEC_c"], results_step_2["CPP-MIP"]["Cs_c"], results_step_1["CPP-MIP_c"]["optimal_values"], results_step_2["CPP-MIP"]["CEC_0_l_z"]]
