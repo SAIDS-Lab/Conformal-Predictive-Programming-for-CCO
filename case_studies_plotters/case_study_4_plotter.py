@@ -59,8 +59,8 @@ def main():
     ax[0].set_title("$\\bar{C}(x^*)$", fontsize=title_size, y=title_position)
 
     # Plot J.
-    union_J = results_step_2["union"]["J"]
-    max_J = results_step_2["max"]["J"]
+    union_J = results_step_1["union"]["optimal_values"]
+    max_J = results_step_1["max"]["optimal_values"]
     min_value = min(min(union_J), min(max_J))
     max_value = max(max(union_J), max(max_J))
     y_1, x_1 = np.histogram(union_J, bins=np.arange(min_value, max_value + (max_value - min_value) / num_bins, (max_value - min_value) / num_bins))

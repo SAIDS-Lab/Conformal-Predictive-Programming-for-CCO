@@ -77,8 +77,8 @@ def main():
     ax[0].set_title("$\\tilde{C}(x^*)$ for RCPP and $C_m(x^*)$ for CPP", fontsize=title_size, y=title_position)
 
     # Plot J.
-    robust_J = results_step_2_robust["CPP-MIP"]["J"]
-    baseline_J = results_baseline_step_2["CPP-MIP"]["J"]
+    robust_J = results_step_1_robust["CPP-MIP"]["optimal_values"]
+    baseline_J = results_baseline_step_1["CPP-MIP"]["optimal_values"]
     min_value = min(min(robust_J), min(baseline_J))
     max_value = max(max(robust_J), max(baseline_J))
     y_1, x_1 = np.histogram(robust_J, bins=np.arange(min_value, max_value + (max_value - min_value) / num_bins, (max_value - min_value) / num_bins))
