@@ -33,6 +33,8 @@ def main():
     print("SOLVER TIME:")
     print(f"Average solving time for CPP-KKT (conditional): {np.mean(results_step_1['CPP-KKT_c']['solver_times'])}")
     print(f"Average solving time for CPP-MIP (conditional): {np.mean(results_step_1['CPP-MIP_c']['solver_times'])}")
+    print(f"Average solving time for CPP-KKT (marginal): {np.mean(results_step_1['CPP-KKT_m']['solver_times'])}")
+    print(f"Average solving time for CPP-MIP (marginal): {np.mean(results_step_1['CPP-MIP_m']['solver_times'])}")
     print(f"Average solving time for nonconvex SA: {np.mean(results_step_1['SA']['solver_times'])}")
     print("VALIDATION TIME:")
     print(f"Average delta computation time for CPP-KKT: {np.mean(results_step_2['CPP-KKT']['delta_comp_time'])}")
@@ -83,11 +85,11 @@ def main():
     ax[0].set_ylabel("Frequency", fontsize = font_size)
     ax[3].set_ylabel("Frequency", fontsize = font_size)
 
-    ax[0].set_title("(a) $C_m(x^*_m)$", fontsize = title_size, y=title_position)
-    ax[1].set_title("(b) $J(x^*_m)$", fontsize = title_size, y=title_position)
+    ax[0].set_title("(a) $C_m(x^*_l)$", fontsize = title_size, y=title_position)
+    ax[1].set_title("(b) $J(x^*_l)$ (optimized with $\\alpha_m$)", fontsize = title_size, y=title_position)
     ax[2].set_title("(c) $CEC_{c, l}$", fontsize = title_size, y=title_position)
-    ax[3].set_title("(d) $C_c(x^*_c)$", fontsize = title_size, y=title_position)
-    ax[4].set_title("(e) $J(x^*_c)$", fontsize = title_size, y=title_position)
+    ax[3].set_title("(d) $C_c(x^*_l)$", fontsize = title_size, y=title_position)
+    ax[4].set_title("(e) $J(x^*_l)$ (optimized with $\\alpha_c$)", fontsize = title_size, y=title_position)
     ax[5].set_title("(f) $CEC_{0, l', z}$", fontsize = title_size, y=title_position)
 
     fig.tight_layout(rect=[0, 0, 1, 1])
@@ -125,7 +127,7 @@ def main():
     plt.tick_params("x", labelsize=label_size)
     plt.tick_params("y", labelsize=label_size)
 
-    # Here, I set the xlim since there is one outlier with delta_star being 0.961, which is caused by the numerical issue. 
+    # Here, I set the xlim since there is one outlier with delta_star being 0.961, which is caused by the numerical issue.
     plt.xlim(0, 0.25)
     plt.ylabel("Frequency", fontsize = font_size)
     plt.title("$\delta^*$", fontsize = font_size, y=title_position)
