@@ -320,14 +320,16 @@ def run_experiment_step_2(statistics_m, L, Z, W, beta, test_noise_generator, f_v
             # Check posterior feasibility.
             # MEC
             if callable(f_value):
-                Y = statistics_m["final_test_Ys"][i][0]
+                # Generate a Y that adheres to the mondrian test group.
+                Y = test_noise_generator()
+                while not is_mondrian_test_group(Y):
+                    Y = test_noise_generator()
                 # filter for mondrian.
-                if is_mondrian_test_group(Y):
-                    MEC_total_count += 1
-                    if f_value(x_opt, Y) <= c_m_vanilla:
-                        MEC_vanilla_count += 1
-                    if f_value(x_opt, Y) <= c_m_mondrian:
-                        MEC_mondrian_count += 1
+                MEC_total_count += 1
+                if f_value(x_opt, Y) <= c_m_vanilla:
+                    MEC_vanilla_count += 1
+                if f_value(x_opt, Y) <= c_m_mondrian:
+                    MEC_mondrian_count += 1
             else:
                 raise Exception("The function f_value is not callable for mondrian method.")
         MEC_vanilla = MEC_vanilla_count / MEC_total_count
